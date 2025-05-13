@@ -7,7 +7,7 @@ export interface AuthResponse {
   };
 }
 
-export interface Quiz {
+export interface QuizforInstructorDashboard {
   id: string;
   title: string;
   description: string;
@@ -15,20 +15,30 @@ export interface Quiz {
   completions?: number; // for instructor quizzes
 }
 
+export interface QuizforStudentDashboardCompleted {
+  quizId: string,
+  title: string,
+  totalScore: number,
+  attemptDate:string
+}
+
+export interface QuizforStudentDashboardUpcoming {
+  id: string,
+  title: string,
+  startTime: string
+}
+
 export interface StudentDashboard {
-  quizzes: Quiz[];
-  stats: {
-    completed: number;
-    averageScore: number;
-  };
+  completedQuizzes: QuizforStudentDashboardCompleted[];
+  upcomingQuizzes: QuizforStudentDashboardUpcoming[];
+  averageScore: number;
 }
 
 export interface InstructorDashboard {
-  quizzes: Quiz[];
-  stats: {
-    quizCount: number;
-    totalCompletions: number;
-  };
+  totalQuizzes: number,
+  activeQuizzes: QuizforInstructorDashboard[],
+  averageAttemptsPerQuiz: number,
+  averageScoreAcrossQuizzes: number
 }
 
 export interface AdminStatistics {

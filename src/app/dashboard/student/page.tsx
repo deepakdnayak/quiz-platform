@@ -57,7 +57,7 @@ export default function StudentDashboardPage() {
           </CardHeader>
           <CardContent>
             <p className="text-2xl font-semibold">
-              {data.stats?.completed ?? 'N/A'}
+              {data.completedQuizzes.length ?? 'N/A'}
             </p>
           </CardContent>
         </Card>
@@ -67,17 +67,55 @@ export default function StudentDashboardPage() {
           </CardHeader>
           <CardContent>
             <p className="text-2xl font-semibold">
-              {data.stats?.averageScore ? `${data.stats.averageScore}%` : 'N/A'}
+              {data.averageScore ? `${data.averageScore}` : '0'}
             </p>
           </CardContent>
         </Card>
       </div>
+      <div className="mb-8">
+        <Card>
+          <CardHeader>
+            <CardTitle>Available Quizzes</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {data.upcomingQuizzes?.length === 0 ? (
+              <p>No quizzes available</p>
+            ) : (
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Title</TableHead>
+                      <TableHead>Time</TableHead>
+                      <TableHead>Attempt</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {data.upcomingQuizzes?.map((quiz,index) => (
+                      <TableRow key={quiz.id ?? `quiz-${index}`}>
+                        <TableCell>{quiz.title}</TableCell>
+                        <TableCell>{quiz.startTime} min</TableCell>
+                        <TableCell>
+                          <Button className="bg-primary hover:bg-blue-700" onClick={() => router.push(`/quiz/${quiz.id}`)}>
+                            Start Quiz
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    )) ?? <TableRow><TableCell colSpan={4}>No quizzes available</TableCell></TableRow>}
+                  </TableBody>
+                </Table>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+
       <Card>
         <CardHeader>
-          <CardTitle>Available Quizzes</CardTitle>
+          <CardTitle>Completed Quizzes</CardTitle>
         </CardHeader>
         <CardContent>
-          {data.quizzes?.length === 0 ? (
+          {data.completedQuizzes?.length === 0 ? (
             <p>No quizzes available</p>
           ) : (
             <div className="overflow-x-auto">
@@ -85,22 +123,17 @@ export default function StudentDashboardPage() {
                 <TableHeader>
                   <TableRow>
                     <TableHead>Title</TableHead>
-                    <TableHead>Description</TableHead>
-                    <TableHead>Duration</TableHead>
-                    <TableHead>Action</TableHead>
+                    <TableHead>Score</TableHead>
+                    <TableHead>Date</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {data.quizzes?.map((quiz) => (
-                    <TableRow key={quiz.id}>
+                  {data.completedQuizzes?.map((quiz, index) => (
+                    <TableRow key={quiz.quizId ?? `quiz-${index}`}>
                       <TableCell>{quiz.title}</TableCell>
-                      <TableCell>{quiz.description}</TableCell>
-                      <TableCell>{quiz.duration} min</TableCell>
-                      <TableCell>
-                        <Button className="bg-primary hover:bg-blue-700" onClick={() => router.push(`/quiz/${quiz.id}`)}>
-                          Start Quiz
-                        </Button>
-                      </TableCell>
+                      <TableCell>{quiz.totalScore}</TableCell>
+                      <TableCell>{quiz.attemptDate}</TableCell>
+                      
                     </TableRow>
                   )) ?? <TableRow><TableCell colSpan={4}>No quizzes available</TableCell></TableRow>}
                 </TableBody>

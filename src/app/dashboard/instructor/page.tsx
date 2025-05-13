@@ -50,33 +50,41 @@ export default function InstructorDashboardPage() {
   return (
     <div className="container mx-auto py-8">
       <h1 className="text-3xl font-bold text-primary mb-6">Instructor Dashboard</h1>
-      <div className="grid gap-6 md:grid-cols-2 mb-8">
+      <div className="grid gap-6 md:grid-cols-3 mb-8">
         <Card>
           <CardHeader>
             <CardTitle>Quizzes Created</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-2xl font-semibold">{data.stats?.quizCount ?? 'N/A'}</p>
+            <p className="text-2xl font-semibold">{data.totalQuizzes ?? 'N/A'}</p>
           </CardContent>
         </Card>
         <Card>
           <CardHeader>
-            <CardTitle>Total Completions</CardTitle>
+            <CardTitle>Average Score</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-2xl font-semibold">{data.stats?.totalCompletions ?? 'N/A'}</p>
+            <p className="text-2xl font-semibold">{data.averageScoreAcrossQuizzes ?? 'N/A'}</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader>
+            <CardTitle>Average Attempts</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-2xl font-semibold">{data.averageAttemptsPerQuiz ?? 'N/A'}</p>
           </CardContent>
         </Card>
       </div>
       <Card>
         <CardHeader>
-          <CardTitle>Your Quizzes</CardTitle>
+          <CardTitle>Active Quizzes</CardTitle>
         </CardHeader>
         <CardContent>
           <Button className="mb-4 bg-primary hover:bg-blue-700" onClick={() => router.push('/quiz/create')}>
             Create Quiz
           </Button>
-          {data.quizzes?.length === 0 ? (
+          {data.activeQuizzes?.length === 0 ? (
             <p>No quizzes created</p>
           ) : (
             <div className="overflow-x-auto">
@@ -89,7 +97,7 @@ export default function InstructorDashboardPage() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {data.quizzes?.map((quiz) => (
+                  {data.activeQuizzes?.map((quiz) => (
                     <TableRow key={quiz.id}>
                       <TableCell>{quiz.title}</TableCell>
                       <TableCell>{quiz.description}</TableCell>
