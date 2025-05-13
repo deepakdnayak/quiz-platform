@@ -21,6 +21,7 @@ export default function LoginPage() {
     try {
       const response = await login({ email, password });
       localStorage.setItem('token', response.token);
+      localStorage.setItem('user', JSON.stringify(response.user));
       toast.success('Logged in successfully');
       router.push(`/dashboard/${response.user.role.toLowerCase()}`);
     } catch (error: any) {
