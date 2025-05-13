@@ -31,10 +31,40 @@ export interface InstructorDashboard {
   };
 }
 
-export interface AdminDashboard {
-  users: { id: string; email: string; role: string }[];
-  stats: {
-    userCount: number;
-    quizCount: number;
-  };
+export interface AdminStatistics {
+  totalUsers: number;
+  studentCount: number;
+  instructorCount: number;
+  adminCount: number;
+  totalQuizzes: number;
+  totalCompletions: number;
+  instructorDetails: {
+    id: string;
+    email: string;
+    status: 'pending' | 'approved'; // Mapped from isApproved
+  }[];
+  studentDetails: {
+    id: string;
+    email: string;
+    yearOfStudy?: number;
+  }[];
+  activeQuizzes: number;
+  averageScore: number;
+}
+
+export interface UserProgress {
+  quizzes: {
+    id: string;
+    title: string;
+    score: number;
+    completedAt: string;
+  }[];
+}
+
+export interface Notification {
+  id: string;
+  userId: string;
+  email: string;
+  requestedRole: 'Instructor';
+  createdAt: string;
 }

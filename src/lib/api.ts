@@ -41,6 +41,7 @@ export const login = async (data: { email: string; password: string }) => {
 export const getStudentDashboard = async () => {
   try {
     const response = await api.get('/api/students/dashboard');
+    console.log('Student Dashboard Response:', response.data); // Debug log
     return response.data;
   } catch (error: any) {
     throw new Error(error.response?.data?.error || 'Failed to fetch student dashboard');
@@ -50,17 +51,66 @@ export const getStudentDashboard = async () => {
 export const getInstructorDashboard = async () => {
   try {
     const response = await api.get('/api/instructors/dashboard');
+    console.log('Instructor Dashboard Response:', response.data); // Debug log
     return response.data;
   } catch (error: any) {
     throw new Error(error.response?.data?.error || 'Failed to fetch instructor dashboard');
   }
 };
 
-export const getAdminDashboard = async () => {
+export const getAdminStatistics = async () => {
   try {
-    const response = await api.get('/api/admin/dashboard');
+    const response = await api.get('/api/admin/statistics');
+    console.log('Admin Statistics Response:', response.data); // Debug log
     return response.data;
   } catch (error: any) {
-    throw new Error(error.response?.data?.error || 'Failed to fetch admin dashboard');
+    throw new Error(error.response?.data?.error || 'Failed to fetch admin statistics');
+  }
+};
+
+export const deleteUser = async (userId: string) => {
+  try {
+    const response = await api.delete(`/api/admin/users/${userId}`);
+    return response.data;
+  } catch (error: any) {
+    throw new Error(error.response?.data?.error || 'Failed to delete user');
+  }
+};
+
+export const updateUserRole = async (userId: string, role: string) => {
+  try {
+    const response = await api.patch(`/api/admin/users/${userId}/role`, { role });
+    return response.data;
+  } catch (error: any) {
+    throw new Error(error.response?.data?.error || 'Failed to update user role');
+  }
+};
+
+export const approveUser = async (userId: string) => {
+  try {
+    const response = await api.post(`/api/admin/users/${userId}/approve`);
+    return response.data;
+  } catch (error: any) {
+    throw new Error(error.response?.data?.error || 'Failed to approve user');
+  }
+};
+
+export const getUserProgress = async (userId: string) => {
+  try {
+    const response = await api.get(`/api/admin/students/${userId}/progress`);
+    console.log('User Progress Response:', response.data); // Debug log
+    return response.data;
+  } catch (error: any) {
+    throw new Error(error.response?.data?.error || 'Failed to fetch user progress');
+  }
+};
+
+export const getNotifications = async () => {
+  try {
+    const response = await api.get('/api/admin/notifications');
+    console.log('Notifications Response:', response.data); // Debug log
+    return response.data;
+  } catch (error: any) {
+    throw new Error(error.response?.data?.error || 'Failed to fetch notifications');
   }
 };
