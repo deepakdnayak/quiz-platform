@@ -78,3 +78,20 @@ export interface Notification {
   requestedRole: 'Instructor';
   createdAt: string;
 }
+
+export interface CreateQuizForm {
+  title: string;
+  description: string;
+  yearOfStudy: number;
+  startTime: string;
+  endTime: string;
+  duration: number;
+  questions: {
+    text: string;
+    score: number;
+    options: {
+      text: string;
+      isCorrect: boolean;
+    }[];
+  }[];
+}

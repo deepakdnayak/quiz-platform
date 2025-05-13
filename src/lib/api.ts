@@ -1,4 +1,6 @@
 import axios from 'axios';
+import { CreateQuizForm } from './types';
+
 
 const baseURL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
 console.log('API baseURL:', baseURL); // Debug log
@@ -112,5 +114,15 @@ export const getNotifications = async () => {
     return response.data;
   } catch (error: any) {
     throw new Error(error.response?.data?.error || 'Failed to fetch notifications');
+  }
+};
+
+export const createQuiz = async (data: CreateQuizForm) => {
+  try {
+    const response = await api.post('/api/quizzes', data);
+    console.log('Create Quiz Response:', response.data); // Debug log
+    return response.data;
+  } catch (error: any) {
+    throw new Error(error.response?.data?.error || 'Failed to create quiz');
   }
 };

@@ -9,6 +9,7 @@ import { toast } from 'sonner';
 import { getInstructorDashboard } from '@/lib/api';
 import { InstructorDashboard } from '@/lib/types';
 
+
 export default function InstructorDashboardPage() {
   const [data, setData] = useState<InstructorDashboard | null>(null);
   const [loading, setLoading] = useState(true);
@@ -48,7 +49,7 @@ export default function InstructorDashboardPage() {
   }
 
   return (
-    <div className="container mx-auto py-8">
+    <div className="container mx-auto p-8">
       <h1 className="text-3xl font-bold text-primary mb-6">Instructor Dashboard</h1>
       <div className="grid gap-6 md:grid-cols-3 mb-8">
         <Card>
@@ -110,6 +111,14 @@ export default function InstructorDashboardPage() {
           )}
         </CardContent>
       </Card>
+
+      <Button
+          className="bg-primary hover:bg-blue-700"
+          onClick={() => router.push('/dashboard/instructor/quiz/create')}
+        >
+          Create Quiz
+      </Button>
+
     </div>
   );
 }
