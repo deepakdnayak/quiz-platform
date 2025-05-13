@@ -71,8 +71,16 @@ function QuestionField({
           <div className="space-y-2">
             {options.map((option: any, oIndex: number) => (
               <div key={option.id} className="flex items-center space-x-2">
-                <Checkbox
-                  {...register(`questions.${qIndex}.options.${oIndex}.isCorrect`)}
+                <Controller
+                  control={control}
+                  name={`questions.${qIndex}.options.${oIndex}.isCorrect`}
+                  render={({ field }) => (
+                    <Checkbox
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                      id={`questions.${qIndex}.options.${oIndex}.isCorrect`}
+                    />
+                  )}
                 />
                 <Input
                   {...register(`questions.${qIndex}.options.${oIndex}.text`, {
@@ -137,6 +145,7 @@ export default function CreateQuizPage() {
   const [submitting, setSubmitting] = useState(false);
 
   const onSubmit = async (data: CreateQuizForm) => {
+    console.log('Form Data:', JSON.stringify(data, null, 2)); // Debug form data
     try {
       setSubmitting(true);
       // Validate dates
@@ -152,7 +161,7 @@ export default function CreateQuizPage() {
           toast.error('Each question must have at least two options');
           return;
         }
-        if (!question.options.some((option) => option.isCorrect)) {
+        if (!question.options.some((option) => option.isCorrect === true)) {
           toast.error('Each question must have at least one correct option');
           return;
         }
@@ -245,11 +254,18 @@ export default function CreateQuizPage() {
                     control={control}
                     rules={{ required: 'End time is required' }}
                     render={({ field }) => (
-                      <DateTimePicker
-                        onChange={(value) => field.onChange(value?.toISOString())}
-                        value={field.value ? new Date(field.value) : null}
-                        disableClock
-                        className="w-full"
+                      <Controller
+                        name="endTime"
+                        control={control}
+                        rules={{ required: 'End time is required' }}
+                        render={({ field }) => (
+                          <DateTimePicker
+                            onChange={(value) => field.onChange(value?.toISOString())}
+                            value={field.value ? new Date(field.value) : null}
+                            disableClock
+                            className="w-full"
+                          />
+                        )}
                       />
                     )}
                   />

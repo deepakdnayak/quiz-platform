@@ -98,8 +98,8 @@ export default function InstructorDashboardPage() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {data.activeQuizzes?.map((quiz) => (
-                    <TableRow key={quiz.id}>
+                  {data.activeQuizzes?.map((quiz,index) => (
+                    <TableRow key={quiz.id ?? `quiz-${index}`}>
                       <TableCell>{quiz.title}</TableCell>
                       <TableCell>{quiz.description}</TableCell>
                       <TableCell>{quiz.completions ?? 0}</TableCell>
@@ -112,12 +112,14 @@ export default function InstructorDashboardPage() {
         </CardContent>
       </Card>
 
-      <Button
-          className="bg-primary hover:bg-blue-700"
-          onClick={() => router.push('/dashboard/instructor/quiz/create')}
-        >
-          Create Quiz
-      </Button>
+      <div className="py-5 flex justify-end">
+        <Button
+            className="bg-primary hover:bg-blue-700"
+            onClick={() => router.push('/dashboard/instructor/quiz/create')}
+          >
+            Create Quiz
+        </Button>
+      </div>
 
     </div>
   );
