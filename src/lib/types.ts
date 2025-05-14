@@ -23,13 +23,22 @@ export interface QuizforStudentDashboardCompleted {
 }
 
 export interface QuizforStudentDashboardUpcoming {
-  _id: string,
+  id: string,
   title: string,
   startTime: string
+  endTime: string
+}
+
+export interface QuizforStudentDashboardActive {
+  id: string,
+  title: string,
+  startTime: string
+  endTime: string
 }
 
 export interface StudentDashboard {
   completedQuizzes: QuizforStudentDashboardCompleted[];
+  activeQuizzes: QuizforStudentDashboardActive[];
   upcomingQuizzes: QuizforStudentDashboardUpcoming[];
   averageScore: number;
 }

@@ -48,7 +48,7 @@ export default function StudentDashboardPage() {
   }
 
   return (
-    <div className="container mx-auto py-8">
+    <div className="container mx-auto p-8">
       <h1 className="text-3xl font-bold text-primary mb-6">Student Dashboard</h1>
       <div className="grid gap-6 md:grid-cols-2 mb-8">
         <Card>
@@ -75,7 +75,7 @@ export default function StudentDashboardPage() {
       <div className="mb-8">
         <Card>
           <CardHeader>
-            <CardTitle>Available Quizzes</CardTitle>
+            <CardTitle>Upcoming Quizzes</CardTitle>
           </CardHeader>
           <CardContent>
             {data.upcomingQuizzes?.length === 0 ? (
@@ -86,22 +86,59 @@ export default function StudentDashboardPage() {
                   <TableHeader>
                     <TableRow>
                       <TableHead>Title</TableHead>
-                      <TableHead>Time</TableHead>
-                      <TableHead>Attempt</TableHead>
+                      <TableHead>Start Time</TableHead>
+                      <TableHead>End Time</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {data.upcomingQuizzes?.map((quiz,index) => (
-                      <TableRow key={quiz._id ?? `quiz-${index}`}>
+                      <TableRow key={quiz.id ?? `quiz-${index}`}>
                         <TableCell>{quiz.title}</TableCell>
-                        <TableCell>{quiz.startTime} min</TableCell>
+                        <TableCell>{quiz.startTime}</TableCell>
+                        <TableCell>{quiz.endTime}</TableCell>
+                        
+                      </TableRow>
+                    )) ?? <TableRow><TableCell colSpan={4}>No quizzes available</TableCell></TableRow>}
+                  </TableBody>
+                </Table>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+
+      <div className="mb-8">
+        <Card>
+          <CardHeader>
+            <CardTitle>Active Quizzes</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {data.activeQuizzes?.length === 0 ? (
+              <p>No active quizzes</p>
+            ) : (
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Title</TableHead>
+                      <TableHead>Start Time</TableHead>
+                      <TableHead>End Time</TableHead>
+                      <TableHead>Attempt</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {data.activeQuizzes?.map((quiz,index) => (
+                      <TableRow key={quiz.id ?? `quiz-${index}`}>
+                        <TableCell>{quiz.title}</TableCell>
+                        <TableCell>{quiz.startTime}</TableCell>
+                        <TableCell>{quiz.endTime}</TableCell>
                         <TableCell>
-                          <Button className="bg-primary hover:bg-blue-700" onClick={() => router.push(`/quiz/${quiz._id}`)} disabled={!quiz._id}>
+                          <Button className="bg-primary hover:bg-blue-700" onClick={() => router.push(`/quiz/${quiz.id}`)} disabled={!quiz.id}>
                             Start Quiz
                           </Button>
                         </TableCell>
                       </TableRow>
-                    )) ?? <TableRow><TableCell colSpan={4}>No quizzes available</TableCell></TableRow>}
+                    )) ?? <TableRow><TableCell colSpan={4}>No quizzes active</TableCell></TableRow>}
                   </TableBody>
                 </Table>
               </div>
