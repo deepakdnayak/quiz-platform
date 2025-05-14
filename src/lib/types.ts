@@ -23,7 +23,7 @@ export interface QuizforStudentDashboardCompleted {
 }
 
 export interface QuizforStudentDashboardUpcoming {
-  id: string,
+  _id: string,
   title: string,
   startTime: string
 }
@@ -95,3 +95,59 @@ export interface CreateQuizForm {
     }[];
   }[];
 }
+
+export interface QuizDetails {
+  id: string;
+  title: string;
+  description: string;
+  duration: number;
+  startTime: string;
+  endTime: string;
+  questions: {
+    questionId: string;
+    text: string;
+    score: number;
+    options: { optionId: string; text: string }[];
+  }[];
+}
+
+export interface QuizAttempt {
+  answers: { questionId: string; selectedOptionIds: string[] }[];
+}
+
+export interface QuizResults {
+  attempt: {
+    attemptId: string;
+    quizId: string;
+    totalScore: number;
+    answers: {
+      questionId: string;
+      selectedOptionIds: string[];
+      isCorrect: boolean;
+      scoreAwarded: number;
+      _id: string;
+    }[];
+  };
+  quiz: {
+    questions: {
+      questionId: string;
+      text: string;
+      options: {
+        text: string;
+        isCorrect: boolean;
+        _id: string;
+        optionId: string;
+      }[];
+      correctOptionIds: string[];
+      score: number;
+    }[];
+  };
+}
+
+
+// export interface RunningQuizes {
+//   totalQuizzes: number,
+//   activeQuizzes: QuizforInstructorDashboard[],
+//   averageAttemptsPerQuiz: number,
+//   averageScoreAcrossQuizzes: number
+// }

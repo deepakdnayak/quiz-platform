@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { CreateQuizForm } from './types';
+import { CreateQuizForm, StudentDashboard, QuizDetails, QuizAttempt, QuizResults } from './types';
 
 
 const baseURL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
@@ -126,3 +126,40 @@ export const createQuiz = async (data: CreateQuizForm) => {
     throw new Error(error.response?.data?.error || 'Failed to create quiz');
   }
 };
+
+export const getQuizDetails = async (quizId: string): Promise<QuizDetails> => {
+  try {
+    const response = await api.get(`/api/quizzes/${quizId}`);
+    return response.data;
+  } catch (error: any) {
+    throw new Error(error.response?.data?.message || 'Failed to fetch quiz details');
+  }
+};
+
+export const submitQuizAttempt = async (quizId: string, data: QuizAttempt): Promise<void> => {
+  try {
+    const response = await api.post(`/api/quizzes/${quizId}/attempt`, { answers: data.answers });
+    return response.data;
+  } catch (error: any) {
+    throw new Error(error.response?.data?.message || 'Failed to submit quiz attempt');
+  }
+};
+
+export const getQuizResults = async (quizId: string): Promise<QuizResults> => {
+  try {
+    const response = await api.get(`/api/quizzes/${quizId}/results`);
+    return response.data;
+  } catch (error: any) {
+    throw new Error(error.response?.data?.message || 'Failed to fetch quiz results');
+  }
+};
+
+
+// export const getRunningQuizes = async () => {
+//   try {
+//     const response = await api.get(`/api/quizzes?status=active`);
+//     return response.data;
+//   } catch (error: any) {
+//     throw new Error(error.response?.data?.message || 'Failed to fetch quiz results');
+//   }
+// };

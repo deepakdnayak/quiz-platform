@@ -92,11 +92,11 @@ export default function StudentDashboardPage() {
                   </TableHeader>
                   <TableBody>
                     {data.upcomingQuizzes?.map((quiz,index) => (
-                      <TableRow key={quiz.id ?? `quiz-${index}`}>
+                      <TableRow key={quiz._id ?? `quiz-${index}`}>
                         <TableCell>{quiz.title}</TableCell>
                         <TableCell>{quiz.startTime} min</TableCell>
                         <TableCell>
-                          <Button className="bg-primary hover:bg-blue-700" onClick={() => router.push(`/quiz/${quiz.id}`)}>
+                          <Button className="bg-primary hover:bg-blue-700" onClick={() => router.push(`/quiz/${quiz._id}`)} disabled={!quiz._id}>
                             Start Quiz
                           </Button>
                         </TableCell>
@@ -125,6 +125,7 @@ export default function StudentDashboardPage() {
                     <TableHead>Title</TableHead>
                     <TableHead>Score</TableHead>
                     <TableHead>Date</TableHead>
+                    <TableHead>Results</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -133,7 +134,15 @@ export default function StudentDashboardPage() {
                       <TableCell>{quiz.title}</TableCell>
                       <TableCell>{quiz.totalScore}</TableCell>
                       <TableCell>{quiz.attemptDate}</TableCell>
-                      
+                      <TableCell>
+                        <Button
+                          className="bg-primary hover:bg-blue-700"
+                          onClick={() => router.push(`/quiz/${quiz.quizId}/results`)}
+                          disabled={!quiz.quizId}
+                        >
+                          View Results
+                        </Button>
+                      </TableCell>
                     </TableRow>
                   )) ?? <TableRow><TableCell colSpan={4}>No quizzes available</TableCell></TableRow>}
                 </TableBody>
