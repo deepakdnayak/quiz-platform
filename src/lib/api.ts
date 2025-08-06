@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { CreateQuizForm, StudentDashboard, QuizDetails, QuizAttempt, QuizResults } from './types';
+import { CreateQuizForm, StudentDashboard, QuizDetails, QuizAttempt, QuizResults, Profile, ProfileResponse, UpdateProfileData } from './types';
 
 
 const baseURL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
@@ -163,3 +163,24 @@ export const getQuizResults = async (quizId: string): Promise<QuizResults> => {
 //     throw new Error(error.response?.data?.message || 'Failed to fetch quiz results');
 //   }
 // };
+
+
+export const getProfile = async (): Promise<ProfileResponse> => {
+  try {
+    const response = await api.get('/api/users/profile');
+    console.log('Get Profile Response:', response.data); // Debug log
+    return response.data;
+  } catch (error: any) {
+    throw new Error(error.response?.data?.error || 'Failed to fetch profile');
+  }
+};
+
+export const updateProfile = async (data: UpdateProfileData): Promise<{ profile: Profile }> => {
+  try {
+    const response = await api.put('/api/users/profile', data);
+    console.log('Update Profile Response:', response.data); // Debug log
+    return response.data;
+  } catch (error: any) {
+    throw new Error(error.response?.data?.error || 'Failed to update profile');
+  }
+};

@@ -160,3 +160,31 @@ export interface QuizResults {
 //   averageAttemptsPerQuiz: number,
 //   averageScoreAcrossQuizzes: number
 // }
+
+
+export interface Profile {
+  _id: string;
+  userId: string;
+  firstName: string;
+  lastName: string;
+  yearOfStudy: string | null;
+  department: string;
+  rollNumber: string | null;
+}
+
+export interface ProfileResponse {
+  user: {
+    id: string;
+    email: string;
+    role: string;
+  };
+  profile: Profile | null;
+}
+
+export interface UpdateProfileData {
+  firstName: string;
+  lastName: string;
+  yearOfStudy: string | null;
+  department: string;
+  rollNumber: string | null;
+}

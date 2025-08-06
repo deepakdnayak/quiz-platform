@@ -2,13 +2,14 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 
 export default function Navbar() {
   const [user, setUser] = useState<{ email: string; role: string } | null>(null);
   const router = useRouter();
+  const pathname = usePathname();
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -16,7 +17,10 @@ export default function Navbar() {
     if (token && storedUser) {
       setUser(JSON.parse(storedUser));
     }
-  }, []);
+    else {
+      setUser(null); // Clear user if no token or storedUser
+    }
+  }, [pathname]); 
 
   const handleLogout = () => {
     localStorage.removeItem('token');
