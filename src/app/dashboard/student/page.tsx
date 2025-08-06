@@ -11,6 +11,39 @@ import { toast } from 'sonner';
 import { getStudentDashboard, getProfile, updateProfile } from '@/lib/api';
 import { StudentDashboard, Profile, UpdateProfileData } from '@/lib/types';
 
+// Utility to format ISO date to 12-hour IST format (e.g., "2:30 PM, Aug 06, 2025")
+const formatISTDate = (isoDate: string): string => {
+  try {
+    const date = new Date(isoDate);
+    // Convert to IST (UTC+5:30)
+    const istOffset = 5.5 * 60 * 60 * 1000; // 5 hours 30 minutes in milliseconds
+    const istDate = new Date(date.getTime() + istOffset);
+    
+    const options: Intl.DateTimeFormatOptions = {
+      hour: 'numeric',
+      minute: '2-digit',
+      hour12: true,
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric',
+      timeZone: 'UTC', // Base on UTC and adjust manually with offset
+    };
+    return istDate.toLocaleString('en-IN', options).replace(',', '');
+  } catch {
+    return 'N/A';
+  }
+};
+
+// Utility to check if quiz end time has passed (in IST)
+const isQuizEnded = (endTime: string): boolean => {
+  const endDate = new Date(endTime);
+  const currentTime = new Date();
+  // Convert current time to IST (UTC+5:30)
+  const istOffset = 5.5 * 60 * 60 * 1000; // 5 hours 30 minutes in milliseconds
+  const istTime = new Date(currentTime.getTime() + istOffset);
+  return istTime > endDate;
+};
+
 export default function StudentDashboardPage() {
   const [data, setData] = useState<StudentDashboard | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
@@ -76,6 +109,8 @@ export default function StudentDashboardPage() {
       const response = await updateProfile(formData);
       setProfile(response.profile);
       setIsEditing(false);
+      localStorage.setItem('profile', JSON.stringify(response.profile));
+      window.dispatchEvent(new Event('storageChange')); // Notify Navbar
       toast.success('Profile updated successfully');
     } catch (error: any) {
       toast.error(error.message || 'Failed to update profile');
@@ -98,6 +133,12 @@ export default function StudentDashboardPage() {
       default:
         return false;
     }
+  };
+
+  // Check if a quiz has been attempted by matching id with completedQuizzes
+  const isQuizAttempted = (quizId: string | undefined): boolean => {
+    if (!quizId || !data?.completedQuizzes) return false;
+    return data.completedQuizzes.some((completedQuiz) => completedQuiz.quizId === quizId);
   };
 
   if (loading) {
@@ -127,7 +168,7 @@ export default function StudentDashboardPage() {
                 <div>
                   <Label htmlFor="firstName">First Name</Label>
                   <Input
-                    type='text'
+                    type="text"
                     id="firstName"
                     name="firstName"
                     value={formData.firstName}
@@ -139,7 +180,7 @@ export default function StudentDashboardPage() {
                 <div>
                   <Label htmlFor="lastName">Last Name</Label>
                   <Input
-                    type='text'
+                    type="text"
                     id="lastName"
                     name="lastName"
                     value={formData.lastName}
@@ -151,7 +192,7 @@ export default function StudentDashboardPage() {
                 <div>
                   <Label htmlFor="yearOfStudy">Year of Study</Label>
                   <Input
-                    type='number'
+                    type="number"
                     id="yearOfStudy"
                     name="yearOfStudy"
                     value={formData.yearOfStudy || ''}
@@ -165,7 +206,7 @@ export default function StudentDashboardPage() {
                 <div>
                   <Label htmlFor="department">Department</Label>
                   <Input
-                    type='text'
+                    type="text"
                     id="department"
                     name="department"
                     value={formData.department}
@@ -177,7 +218,7 @@ export default function StudentDashboardPage() {
                 <div>
                   <Label htmlFor="rollNumber">Roll Number</Label>
                   <Input
-                    type='text'
+                    type="text"
                     id="rollNumber"
                     name="rollNumber"
                     value={formData.rollNumber || ''}
@@ -239,7 +280,7 @@ export default function StudentDashboardPage() {
         </Card>
       </div>
 
-      {/* Existing Dashboard Content */}
+      {/* Quizzes Completed and Average Score */}
       <div className="grid gap-6 md:grid-cols-2 mb-8">
         <Card>
           <CardHeader>
@@ -262,6 +303,8 @@ export default function StudentDashboardPage() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Upcoming Quizzes */}
       <div className="mb-8">
         <Card>
           <CardHeader>
@@ -284,10 +327,10 @@ export default function StudentDashboardPage() {
                     {data.upcomingQuizzes?.map((quiz, index) => (
                       <TableRow key={quiz.id ?? `quiz-${index}`}>
                         <TableCell>{quiz.title}</TableCell>
-                        <TableCell>{quiz.startTime}</TableCell>
-                        <TableCell>{quiz.endTime}</TableCell>
+                        <TableCell>{formatISTDate(quiz.startTime)}</TableCell>
+                        <TableCell>{formatISTDate(quiz.endTime)}</TableCell>
                       </TableRow>
-                    )) ?? <TableRow><TableCell colSpan={4}>No quizzes available</TableCell></TableRow>}
+                    )) ?? <TableRow><TableCell colSpan={3}>No quizzes available</TableCell></TableRow>}
                   </TableBody>
                 </Table>
               </div>
@@ -296,6 +339,7 @@ export default function StudentDashboardPage() {
         </Card>
       </div>
 
+      {/* Active Quizzes */}
       <div className="mb-8">
         <Card>
           <CardHeader>
@@ -319,10 +363,15 @@ export default function StudentDashboardPage() {
                     {data.activeQuizzes?.map((quiz, index) => (
                       <TableRow key={quiz.id ?? `quiz-${index}`}>
                         <TableCell>{quiz.title}</TableCell>
-                        <TableCell>{quiz.startTime}</TableCell>
-                        <TableCell>{quiz.endTime}</TableCell>
+                        <TableCell>{formatISTDate(quiz.startTime)}</TableCell>
+                        <TableCell>{formatISTDate(quiz.endTime)}</TableCell>
                         <TableCell>
-                          <Button className="bg-primary hover:bg-blue-700" onClick={() => router.push(`/quiz/${quiz.id}`)} disabled={!quiz.id}>
+                          <Button
+                            className="bg-primary hover:bg-blue-700"
+                            onClick={() => router.push(`/quiz/${quiz.id}`)}
+                            disabled={!quiz.id || isQuizAttempted(quiz.id)}
+                            title={isQuizAttempted(quiz.id) ? 'Quiz already attempted' : 'Start quiz'}
+                          >
                             Start Quiz
                           </Button>
                         </TableCell>
@@ -336,6 +385,7 @@ export default function StudentDashboardPage() {
         </Card>
       </div>
 
+      {/* Completed Quizzes */}
       <Card>
         <CardHeader>
           <CardTitle>Completed Quizzes</CardTitle>
@@ -350,27 +400,31 @@ export default function StudentDashboardPage() {
                   <TableRow>
                     <TableHead>Title</TableHead>
                     <TableHead>Score</TableHead>
-                    <TableHead>Date</TableHead>
+                    <TableHead>Attempt Date</TableHead>
                     <TableHead>Results</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {data.completedQuizzes?.map((quiz, index) => (
-                    <TableRow key={quiz.quizId ?? `quiz-${index}`}>
-                      <TableCell>{quiz.title}</TableCell>
-                      <TableCell>{quiz.totalScore}</TableCell>
-                      <TableCell>{quiz.attemptDate}</TableCell>
-                      <TableCell>
-                        <Button
-                          className="bg-primary hover:bg-blue-700"
-                          onClick={() => router.push(`/quiz/${quiz.quizId}/results`)}
-                          disabled={!quiz.quizId}
-                        >
-                          View Results
-                        </Button>
-                      </TableCell>
-                    </TableRow>
-                  )) ?? <TableRow><TableCell colSpan={4}>No quizzes available</TableCell></TableRow>}
+                  {data.completedQuizzes?.map((quiz, index) => {
+                    const canViewResults = isQuizEnded(quiz.endTime);
+                    return (
+                      <TableRow key={quiz.quizId ?? `quiz-${index}`}>
+                        <TableCell>{quiz.title}</TableCell>
+                        <TableCell>{quiz.totalScore}</TableCell>
+                        <TableCell>{formatISTDate(quiz.attemptDate)}</TableCell>
+                        <TableCell>
+                          <Button
+                            className="bg-primary hover:bg-blue-700"
+                            onClick={() => router.push(`/quiz/${quiz.quizId}/results`)}
+                            disabled={!quiz.quizId || !canViewResults}
+                            title={canViewResults ? 'View quiz results' : 'Results available after quiz ends'}
+                          >
+                            View Results
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  }) ?? <TableRow><TableCell colSpan={4}>No quizzes available</TableCell></TableRow>}
                 </TableBody>
               </Table>
             </div>

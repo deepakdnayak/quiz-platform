@@ -16,10 +16,11 @@ export interface QuizforInstructorDashboard {
 }
 
 export interface QuizforStudentDashboardCompleted {
-  quizId: string,
-  title: string,
-  totalScore: number,
-  attemptDate:string
+  quizId: string;
+  title: string;
+  totalScore: number;
+  attemptDate:string;
+  endTime: string;
 }
 
 export interface QuizforStudentDashboardUpcoming {
