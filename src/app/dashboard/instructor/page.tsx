@@ -82,9 +82,6 @@ export default function InstructorDashboardPage() {
           <CardTitle>Active Quizzes</CardTitle>
         </CardHeader>
         <CardContent>
-          <Button className="mb-4 bg-primary hover:bg-blue-700" onClick={() => router.push('/quiz/create')}>
-            Create Quiz
-          </Button>
           {data.activeQuizzes?.length === 0 ? (
             <p>No quizzes created</p>
           ) : (
