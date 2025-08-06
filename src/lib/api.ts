@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { CreateQuizForm, StudentDashboard, QuizDetails, QuizAttempt, QuizResults, Profile, ProfileResponse, UpdateProfileData } from './types';
+import { CreateQuizForm, StudentDashboard, InstructorDashboard, InstructorQuiz, QuizStatistics, QuizDetails, QuizAttempt, QuizResults, Profile, ProfileResponse, UpdateProfileData } from './types';
 
 
 const baseURL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
@@ -50,13 +50,33 @@ export const getStudentDashboard = async () => {
   }
 };
 
-export const getInstructorDashboard = async () => {
+export const getInstructorDashboard = async (): Promise<InstructorDashboard> => {
   try {
     const response = await api.get('/api/instructors/dashboard');
-    console.log('Instructor Dashboard Response:', response.data); // Debug log
+    console.log('Get Instructor Dashboard Response:', response.data); // Debug log
     return response.data;
   } catch (error: any) {
     throw new Error(error.response?.data?.error || 'Failed to fetch instructor dashboard');
+  }
+};
+
+export const getInstructorQuizzes = async (status: 'all' | 'active' | 'upcoming' | 'past' = 'all'): Promise<InstructorQuiz[]> => {
+  try {
+    const response = await api.get('/api/instructors/quizzes', { params: { status } });
+    console.log('Get Instructor Quizzes Response:', response.data); // Debug log
+    return response.data;
+  } catch (error: any) {
+    throw new Error(error.response?.data?.error || 'Failed to fetch instructor quizzes');
+  }
+};
+
+export const getQuizStatistics = async (quizId: string): Promise<QuizStatistics> => {
+  try {
+    const response = await api.get(`/api/quizzes/${quizId}/statistics`);
+    console.log('Get Quiz Statistics Response:', response.data); // Debug log
+    return response.data;
+  } catch (error: any) {
+    throw new Error(error.response?.data?.error || 'Failed to fetch quiz statistics');
   }
 };
 

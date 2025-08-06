@@ -44,11 +44,44 @@ export interface StudentDashboard {
   averageScore: number;
 }
 
+// export interface InstructorDashboard {
+//   totalQuizzes: number,
+//   activeQuizzes: QuizforInstructorDashboard[],
+//   averageAttemptsPerQuiz: number,
+//   averageScoreAcrossQuizzes: number
+// }
+
 export interface InstructorDashboard {
-  totalQuizzes: number,
-  activeQuizzes: QuizforInstructorDashboard[],
-  averageAttemptsPerQuiz: number,
-  averageScoreAcrossQuizzes: number
+  totalQuizzes: number;
+  activeQuizzes: {     // new one - check if probem
+    id: string;
+    title: string;
+    startTime: string;
+    endTime: string;
+  }[];
+  averageAttemptsPerQuiz: number;
+  averageScoreAcrossQuizzes: number;
+}
+
+export interface InstructorQuiz {
+  quizId: string;
+  title: string;
+  yearOfStudy: number;
+  startTime: string;
+  endTime: string;
+  totalAttempts: number;
+}
+
+export interface QuizStatistics {
+  quizId: string;
+  totalAttempts: number;
+  averageScore: number;
+  highestScore: number;
+  lowestScore: number;
+  attemptsByYear: {
+    yearOfStudy: string;
+    count: number;
+  }[];
 }
 
 export interface AdminStatistics {
@@ -189,3 +222,4 @@ export interface UpdateProfileData {
   department: string;
   rollNumber: string | null;
 }
+
