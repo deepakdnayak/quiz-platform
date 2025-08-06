@@ -5,13 +5,24 @@ import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
-import { getStudentDashboard } from '@/lib/api';
-import { StudentDashboard } from '@/lib/types';
+import { getStudentDashboard, getProfile, updateProfile } from '@/lib/api';
+import { StudentDashboard, Profile, UpdateProfileData } from '@/lib/types';
 
 export default function StudentDashboardPage() {
   const [data, setData] = useState<StudentDashboard | null>(null);
+  const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isEditing, setIsEditing] = useState(false);
+  const [formData, setFormData] = useState<UpdateProfileData>({
+    firstName: '',
+    lastName: '',
+    yearOfStudy: '',
+    department: '',
+    rollNumber: '',
+  });
   const router = useRouter();
 
   useEffect(() => {
@@ -24,13 +35,25 @@ export default function StudentDashboardPage() {
 
     const fetchData = async () => {
       try {
-        const response = await getStudentDashboard();
-        console.log('Student Dashboard API Response:', response); // Debug log
-        setData(response);
-        toast.success('Dashboard loaded successfully');
+        const [dashboardResponse, profileResponse] = await Promise.all([
+          getStudentDashboard(),
+          getProfile(),
+        ]);
+        console.log('Student Dashboard API Response:', dashboardResponse); // Debug log
+        console.log('Profile API Response:', profileResponse); // Debug log
+        setData(dashboardResponse);
+        setProfile(profileResponse.profile);
+        setFormData({
+          firstName: profileResponse.profile?.firstName || '',
+          lastName: profileResponse.profile?.lastName || '',
+          yearOfStudy: profileResponse.profile?.yearOfStudy || '',
+          department: profileResponse.profile?.department || '',
+          rollNumber: profileResponse.profile?.rollNumber || '',
+        });
+        toast.success('Dashboard and profile loaded successfully');
       } catch (error: any) {
-        console.error('Error fetching student dashboard:', error); // Debug log
-        toast.error(error.message || 'Failed to load dashboard');
+        console.error('Error fetching data:', error); // Debug log
+        toast.error(error.message || 'Failed to load dashboard or profile');
       } finally {
         setLoading(false);
       }
@@ -39,17 +62,184 @@ export default function StudentDashboardPage() {
     fetchData();
   }, [router]);
 
+  const handleEditToggle = () => {
+    setIsEditing(!isEditing);
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleSaveProfile = async () => {
+    try {
+      const response = await updateProfile(formData);
+      setProfile(response.profile);
+      setIsEditing(false);
+      toast.success('Profile updated successfully');
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to update profile');
+    }
+  };
+
+  const isDefaultValue = (field: keyof UpdateProfileData, value: string | null) => {
+    if (!value) return false;
+    switch (field) {
+      case 'firstName':
+        return value === 'FirstName';
+      case 'lastName':
+        return value === 'LastName';
+      case 'department':
+        return value === 'General';
+      case 'yearOfStudy':
+        return value === '1';
+      case 'rollNumber':
+        return value?.startsWith('RN') ?? false;
+      default:
+        return false;
+    }
+  };
+
   if (loading) {
     return <div className="flex justify-center items-center min-h-[calc(100vh-64px)]">Loading...</div>;
   }
 
-  if (!data) {
+  if (!data || !profile) {
     return <div className="flex justify-center items-center min-h-[calc(100vh-64px)]">No data available</div>;
   }
 
   return (
     <div className="container mx-auto p-8">
       <h1 className="text-3xl font-bold text-primary mb-6">Student Dashboard</h1>
+
+      {/* Student Details Card */}
+      <div className="mb-8">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between">
+            <CardTitle>Student Details</CardTitle>
+            <Button onClick={handleEditToggle}>
+              {isEditing ? 'Cancel' : 'Edit Profile'}
+            </Button>
+          </CardHeader>
+          <CardContent>
+            {isEditing ? (
+              <div className="grid gap-4">
+                <div>
+                  <Label htmlFor="firstName">First Name</Label>
+                  <Input
+                    type='text'
+                    id="firstName"
+                    name="firstName"
+                    value={formData.firstName}
+                    onChange={handleInputChange}
+                    placeholder="Enter first name"
+                    required
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="lastName">Last Name</Label>
+                  <Input
+                    type='text'
+                    id="lastName"
+                    name="lastName"
+                    value={formData.lastName}
+                    onChange={handleInputChange}
+                    placeholder="Enter last name"
+                    required
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="yearOfStudy">Year of Study</Label>
+                  <Input
+                    type='number'
+                    id="yearOfStudy"
+                    name="yearOfStudy"
+                    value={formData.yearOfStudy || ''}
+                    onChange={handleInputChange}
+                    placeholder="Enter year of study"
+                    max={4}
+                    min={1}
+                    required
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="department">Department</Label>
+                  <Input
+                    type='text'
+                    id="department"
+                    name="department"
+                    value={formData.department}
+                    onChange={handleInputChange}
+                    placeholder="Enter department"
+                    required
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="rollNumber">Roll Number</Label>
+                  <Input
+                    type='text'
+                    id="rollNumber"
+                    name="rollNumber"
+                    value={formData.rollNumber || ''}
+                    onChange={handleInputChange}
+                    placeholder="Enter roll number"
+                  />
+                </div>
+                <div className="flex justify-end">
+                  <Button className="bg-primary hover:bg-blue-700" onClick={handleSaveProfile}>
+                    Save
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <div className="grid gap-4">
+                <div>
+                  <span className="font-semibold">First Name: </span>
+                  {isDefaultValue('firstName', profile.firstName) ? (
+                    <span className="text-red-500">Please complete your profile</span>
+                  ) : (
+                    profile.firstName
+                  )}
+                </div>
+                <div>
+                  <span className="font-semibold">Last Name: </span>
+                  {isDefaultValue('lastName', profile.lastName) ? (
+                    <span className="text-red-500">Please complete your profile</span>
+                  ) : (
+                    profile.lastName
+                  )}
+                </div>
+                <div>
+                  <span className="font-semibold">Year of Study: </span>
+                  {isDefaultValue('yearOfStudy', profile.yearOfStudy) ? (
+                    <span className="text-red-500">Please complete your profile</span>
+                  ) : (
+                    profile.yearOfStudy || 'N/A'
+                  )}
+                </div>
+                <div>
+                  <span className="font-semibold">Department: </span>
+                  {isDefaultValue('department', profile.department) ? (
+                    <span className="text-red-500">Please complete your profile</span>
+                  ) : (
+                    profile.department
+                  )}
+                </div>
+                <div>
+                  <span className="font-semibold">Roll Number: </span>
+                  {isDefaultValue('rollNumber', profile.rollNumber) ? (
+                    <span className="text-red-500">Please complete your profile</span>
+                  ) : (
+                    profile.rollNumber || 'N/A'
+                  )}
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Existing Dashboard Content */}
       <div className="grid gap-6 md:grid-cols-2 mb-8">
         <Card>
           <CardHeader>
@@ -91,12 +281,11 @@ export default function StudentDashboardPage() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {data.upcomingQuizzes?.map((quiz,index) => (
+                    {data.upcomingQuizzes?.map((quiz, index) => (
                       <TableRow key={quiz.id ?? `quiz-${index}`}>
                         <TableCell>{quiz.title}</TableCell>
                         <TableCell>{quiz.startTime}</TableCell>
                         <TableCell>{quiz.endTime}</TableCell>
-                        
                       </TableRow>
                     )) ?? <TableRow><TableCell colSpan={4}>No quizzes available</TableCell></TableRow>}
                   </TableBody>
@@ -127,7 +316,7 @@ export default function StudentDashboardPage() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {data.activeQuizzes?.map((quiz,index) => (
+                    {data.activeQuizzes?.map((quiz, index) => (
                       <TableRow key={quiz.id ?? `quiz-${index}`}>
                         <TableCell>{quiz.title}</TableCell>
                         <TableCell>{quiz.startTime}</TableCell>
