@@ -114,7 +114,7 @@ export default function QuizResultsPage() {
           <div className="flex justify-end mt-4">
             <Button
               onClick={() => router.push('/dashboard/student')}
-              className="bg-primary hover:bg-blue-700"
+              variant={'grayscale'}
             >
               Back to Dashboard
             </Button>

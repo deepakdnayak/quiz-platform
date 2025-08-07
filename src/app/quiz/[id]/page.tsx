@@ -182,7 +182,7 @@ export default function AttemptQuizPage() {
             <div className="flex justify-end">
               <Button
                 type="submit"
-                className="bg-primary hover:bg-blue-700"
+                variant={'grayscale'}
                 disabled={submitting}
               >
                 {submitting ? 'Submitting...' : 'Submit Quiz'}

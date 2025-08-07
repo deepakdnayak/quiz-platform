@@ -389,7 +389,8 @@ export default function AdminDashboardPage() {
                           <TableCell>{new Date(notif.createdAt).toLocaleDateString()}</TableCell>
                           <TableCell>
                             <Button
-                              className="bg-primary hover:bg-blue-700 mr-2"
+                              variant={'grayscale'}
+                              className="mr-2"
                               onClick={() => handleApprove(notif.userId)}
                             >
                               Approve

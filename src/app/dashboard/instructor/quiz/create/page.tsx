@@ -362,7 +362,7 @@ export default function CreateQuizPage() {
             {/* Form Actions */}
             <div className="flex justify-end space-x-4 pt-6">
               <Button
-                variant="outline"
+                variant={'grayscale'}
                 onClick={() => router.push('/dashboard/instructor')}
                 disabled={submitting}
                 className="px-6"
@@ -371,7 +371,8 @@ export default function CreateQuizPage() {
               </Button>
               <Button
                 type="submit"
-                className="bg-primary hover:bg-blue-700 px-6"
+                variant={'grayscale'}
+                className="px-6"
                 disabled={submitting}
               >
                 {submitting ? 'Saving...' : 'Save Quiz'}

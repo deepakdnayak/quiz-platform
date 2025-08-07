@@ -65,7 +65,7 @@ export default function LoginPage() {
                 required
               />
             </div>
-            <Button type="submit" className="w-full bg-primary hover:bg-blue-700" disabled={isLoading}>
+            <Button type="submit" className="w-full" variant={'grayscale'} disabled={isLoading}>
               {isLoading ? 'Logging in...' : 'Login'}
             </Button>
           </form>

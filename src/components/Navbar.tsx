@@ -40,19 +40,19 @@ export default function Navbar() {
           {user ? (
             <>
               <Link href={`/dashboard/${user.role.toLowerCase()}`}>
-                <Button variant="ghost">Dashboard</Button>
+                <Button variant={'grayscale'}>Dashboard</Button>
               </Link>
-              <Button variant="ghost" onClick={handleLogout}>
+              <Button variant={'outline'} className="hover:bg-gray-300 hover:text-white hover:border-1 hover:border-gray-400" onClick={handleLogout}>
                 Logout
               </Button>
             </>
           ) : (
             <>
               <Link href="/auth/login">
-                <Button variant="ghost">Login</Button>
+                <Button variant={'grayscale'}>Login</Button>
               </Link>
               <Link href="/auth/register">
-                <Button className="bg-primary hover:bg-blue-700">Register</Button>
+                <Button variant={'outline'} className="hover:bg-gray-300 hover:text-white hover:border-1 hover:border-gray-400">Register</Button>
               </Link>
             </>
           )}

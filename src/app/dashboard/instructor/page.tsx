@@ -151,7 +151,7 @@ export default function InstructorDashboardPage() {
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle>All Quizzes</CardTitle>
           <Button
-            className="bg-primary hover:bg-blue-700"
+            variant={'grayscale'}
             onClick={() => router.push('/dashboard/instructor/quiz/create')}
           >
             Create Quiz
@@ -193,7 +193,7 @@ export default function InstructorDashboardPage() {
                         <TableCell>{stats?.lowestScore ?? 'N/A'}</TableCell>
                         <TableCell>
                           <Button
-                            variant="outline"
+                            variant={'grayscale'}
                             size="sm"
                             onClick={() => router.push(`/dashboard/instructor/quiz/${quiz.quizId}/resultsForInstructor?name=${encodeURIComponent(quiz.title)}`)}
                           >

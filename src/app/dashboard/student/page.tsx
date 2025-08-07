@@ -36,6 +36,7 @@ const formatISTDate = (isoDate: string): string => {
 
 // Utility to check if quiz end time has passed (in IST)
 const isQuizEnded = (endTime: string): boolean => {
+  console.log("Ent Time : "+endTime);
   const endDate = new Date(endTime);
   const currentTime = new Date();
   // Convert current time to IST (UTC+5:30)
@@ -162,7 +163,7 @@ export default function StudentDashboardPage() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle>Student Details</CardTitle>
-            <Button onClick={handleEditToggle}>
+            <Button variant={'grayscale'} onClick={handleEditToggle}>
               {isEditing ? 'Cancel' : 'Edit Profile'}
             </Button>
           </CardHeader>
@@ -231,7 +232,7 @@ export default function StudentDashboardPage() {
                   />
                 </div>
                 <div className="flex justify-end">
-                  <Button className="bg-primary hover:bg-blue-700" onClick={handleSaveProfile}>
+                  <Button variant={'grayscale'} onClick={handleSaveProfile}>
                     Save
                   </Button>
                 </div>
@@ -371,7 +372,8 @@ export default function StudentDashboardPage() {
                         <TableCell>{formatISTDate(quiz.endTime)}</TableCell>
                         <TableCell>
                           <Button
-                            className="bg-primary hover:bg-blue-700"
+                            variant={'grayscale'}
+                            // className="bg-primary hover:bg-blue-700"
                             onClick={() => router.push(`/quiz/${quiz.id}`)}
                             disabled={!quiz.id || isQuizAttempted(quiz.id)}
                             title={isQuizAttempted(quiz.id) ? 'Quiz already attempted' : 'Start quiz'}
@@ -418,7 +420,8 @@ export default function StudentDashboardPage() {
                         <TableCell>{formatISTDate(quiz.attemptDate)}</TableCell>
                         <TableCell>
                           <Button
-                            className="bg-primary hover:bg-blue-700"
+                            variant={'grayscale'}
+                            // className="bg-gray-400 hover:bg-gray-500"
                             onClick={() => router.push(`/quiz/${quiz.quizId}/results`)}
                             disabled={!quiz.quizId || !canViewResults}
                             title={canViewResults ? 'View quiz results' : 'Results available after quiz ends'}

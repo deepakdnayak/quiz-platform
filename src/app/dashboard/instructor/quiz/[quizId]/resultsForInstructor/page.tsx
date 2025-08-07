@@ -111,7 +111,7 @@ export default function QuizResultsPage() {
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle>{quizTitle}</CardTitle>
           <Button
-            className="bg-primary hover:bg-blue-700"
+            variant={'grayscale'}
             onClick={() => exportToCSV(results, quizTitle)}
             disabled={results.length === 0}
           >

@@ -7,7 +7,7 @@ export default function Home() {
       <h1 className="text-4xl font-bold text-primary mb-4">Welcome to Quiz Platform</h1>
       <p className="text-lg text-secondary mb-6">Take quizzes, create content, or manage users!</p>
       <Link href="/auth/register">
-        <Button className="bg-primary hover:bg-blue-700">Get Started</Button>
+        <Button variant={'grayscale'}>Get Started</Button>
       </Link>
     </div>
   );
