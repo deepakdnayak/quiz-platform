@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { useForm, Controller } from 'react-hook-form';
 import { Button } from '@/components/ui/button';
@@ -19,16 +19,118 @@ export default function AttemptQuizPage() {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
+  const [violationCount, setViolationCount] = useState(0);
   const { control, handleSubmit, formState: { errors }, setValue } = useForm<QuizAttempt>({
     defaultValues: {
       answers: [],
     },
   });
 
+  // // Enter full-screen mode
+  // const enterFullscreen = useCallback(() => {
+  //   const elem = document.documentElement;
+  //   if (elem.requestFullscreen) {
+  //     elem.requestFullscreen().catch((err) => {
+  //       console.error('Fullscreen failed:', err);
+  //       toast.error('Fullscreen mode could not be enabled. Please enable it manually.');
+  //     });
+  //   }
+  // }, []);
+
+  // Block right-click, selection, and developer tools
   useEffect(() => {
-    console.log('Quiz ID:', id); // Debug log
+    const handleContextMenu = (e: MouseEvent) => e.preventDefault();
+    const handleSelectStart = (e: Event) => e.preventDefault();
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (
+        (e.key === 'F12') ||
+        (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'J' || e.key === 'C')) ||
+        (e.ctrlKey && e.key === 'U')
+      ) {
+        e.preventDefault();
+        toast.warning('Developer tools are disabled during the quiz.');
+      }
+    };
+
+    document.addEventListener('contextmenu', handleContextMenu);
+    document.addEventListener('selectstart', handleSelectStart);
+    document.addEventListener('keydown', handleKeyDown);
+
+    // Apply CSS to disable selection
+    document.body.style.userSelect = 'none';
+    document.body.style.webkitUserSelect = 'none';
+
+    // Clean up event listeners
+    return () => {
+      document.removeEventListener('contextmenu', handleContextMenu);
+      document.removeEventListener('selectstart', handleSelectStart);
+      document.removeEventListener('keydown', handleKeyDown);
+      document.body.style.userSelect = '';
+      document.body.style.webkitUserSelect = '';
+    };
+  }, []);
+
+  // Handle tab switch or close
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
+        handleViolation();
+      }
+    };
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (violationCount === 0) {
+        e.preventDefault();
+        e.returnValue = ''; // Required for Chrome
+        handleViolation();
+      } else if (violationCount === 1) {
+        e.preventDefault();
+        submitQuizAutomatically();
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('beforeunload', handleBeforeUnload);
+
+    // Clean up event listeners
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+    };
+  }, [violationCount]);
+
+  const handleViolation = () => {
+    if (violationCount === 0) {
+      setViolationCount(1);
+      alert('This is your last warning! Switching tabs or closing the browser will end the test.');
+    } else if (violationCount === 1) {
+      submitQuizAutomatically();
+    }
+  };
+
+  const submitQuizAutomatically = async () => {
+    if (quiz) {
+      const formData = {
+        answers: quiz.questions.map((q) => ({
+          questionId: q.questionId,
+          selectedOptionIds: [],
+        })),
+      };
+      try {
+        setSubmitting(true);
+        await submitQuizAttempt(id as string, formData);
+        toast.success('Quiz submitted due to violation');
+        router.push('/dashboard/student');
+      } catch (error: any) {
+        toast.error('Failed to submit quiz automatically');
+        router.push('/dashboard/student');
+      } finally {
+        setSubmitting(false);
+      }
+    }
+  };
+
+  useEffect(() => {
     const token = localStorage.getItem('token');
-    console.log('Token:', token ? 'Present' : 'Missing'); // Debug log
     if (!token) {
       toast.error('Please log in to attempt the quiz');
       router.push('/auth/login');
@@ -43,7 +145,6 @@ export default function AttemptQuizPage() {
     const fetchQuiz = async () => {
       try {
         const response = await getQuizDetails(id as string);
-        console.log('Quiz Details API Response:', response); // Debug log
         const now = new Date();
         const start = new Date(response.startTime);
         const end = new Date(response.endTime);
@@ -58,13 +159,12 @@ export default function AttemptQuizPage() {
           return;
         }
         setQuiz(response);
-        // Initialize answers with questionId
         setValue('answers', response.questions.map((q) => ({
           questionId: q.questionId,
           selectedOptionIds: [],
         })));
+        //enterFullscreen(); // Enter full-screen mode after quiz loads
       } catch (error: any) {
-        console.error('Error fetching quiz details:', error);
         let errorMessage = 'Failed to load quiz';
         if (error.response) {
           if (error.response.status === 404) {
@@ -90,12 +190,10 @@ export default function AttemptQuizPage() {
   }, [id, router, setValue]);
 
   const onSubmit = async (data: QuizAttempt) => {
-    console.log('Form Data:', data); // Debug log
     if (!quiz || data.answers.length !== quiz.questions.length) {
       toast.error('Please answer all questions');
       return;
     }
-    // Validate at least one option selected per question
     const unanswered = data.answers.some((answer) => answer.selectedOptionIds.length === 0);
     if (unanswered) {
       toast.error('Please select at least one option for each question');
@@ -112,7 +210,6 @@ export default function AttemptQuizPage() {
       toast.success('Quiz submitted successfully');
       router.push(`/quiz/${id}/results`);
     } catch (error: any) {
-      console.error('Error submitting quiz attempt:', error);
       toast.error(error.message || 'Failed to submit quiz');
     } finally {
       setSubmitting(false);
@@ -144,7 +241,7 @@ export default function AttemptQuizPage() {
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-            {quiz.questions.map((question,qIndex) => (
+            {quiz.questions.map((question, qIndex) => (
               <Card key={question.questionId} className="p-4">
                 <h3 className="text-lg font-semibold mb-2">
                   {qIndex + 1}. {question.text}
@@ -182,7 +279,7 @@ export default function AttemptQuizPage() {
             <div className="flex justify-end">
               <Button
                 type="submit"
-                variant={'grayscale'}
+                variant="grayscale"
                 disabled={submitting}
               >
                 {submitting ? 'Submitting...' : 'Submit Quiz'}

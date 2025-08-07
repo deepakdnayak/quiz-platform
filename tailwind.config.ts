@@ -8,6 +8,7 @@
      theme: {
        extend: {
          colors: {
+           background: '#F5F5F5',
            primary: '#2563EB',
            secondary: '#4B5563',
          },

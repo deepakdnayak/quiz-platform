@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { CreateQuizForm, QuizResultForInstructor, StudentDashboard, InstructorDashboard, InstructorQuiz, QuizStatistics, QuizDetails, QuizAttempt, QuizResults, Profile, ProfileResponse, UpdateProfileData } from './types';
+import { CreateQuizForm, QuizResultForInstructor,StatsResponse ,StudentDashboard, InstructorDashboard, InstructorQuiz, QuizStatistics, QuizDetails, QuizAttempt, QuizResults, Profile, ProfileResponse, UpdateProfileData } from './types';
 
 
 const baseURL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
@@ -212,5 +212,15 @@ export const getQuizResultsForInstructor = async (quizId: string): Promise<QuizR
     return response.data;
   } catch (error: any) {
     throw new Error(error.response?.data?.error || 'Failed to fetch quiz results');
+  }
+};
+
+export const getStatistics = async (): Promise<StatsResponse> => {
+  try {
+    const response = await api.get('/api/users/getUserCount');
+    console.log('Get Statistics Response:', response.data); // Debug log
+    return response.data;
+  } catch (error: any) {
+    throw new Error(error.response?.data?.error || 'Failed to fetch statistics');
   }
 };

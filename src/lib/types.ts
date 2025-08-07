@@ -231,3 +231,15 @@ export interface QuizResultForInstructor {
   rollNumber: string;
   attemptDate: string;
 }
+
+// Interface for statistics data
+export interface Stats {
+  totalQuizzes: number;
+  totalStudents: number;
+  totalInstructors: number;
+}
+
+// Interface for API response
+export interface StatsResponse {
+  stats: Stats;
+}

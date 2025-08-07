@@ -107,7 +107,10 @@ export default function InstructorDashboardPage() {
   }
 
   if (!dashboardData) {
-    return <div className="flex justify-center items-center min-h-[calc(100vh-64px)]">No data available</div>;
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    toast.error('Please login to access dashboard');
+    return router.push('/');
   }
 
   return (

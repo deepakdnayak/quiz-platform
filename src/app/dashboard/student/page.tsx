@@ -151,7 +151,10 @@ export default function StudentDashboardPage() {
   }
 
   if (!data || !profile) {
-    return <div className="flex justify-center items-center min-h-[calc(100vh-64px)]">No data available</div>;
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    toast.error('Please login to access dashboard');
+    return router.push('/')
   }
 
   return (
@@ -320,20 +323,20 @@ export default function StudentDashboardPage() {
               <p>No quizzes available</p>
             ) : (
               <div className="overflow-x-auto">
-                <Table>
+                <Table className="table-fixed w-full">
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Title</TableHead>
-                      <TableHead>Start Time</TableHead>
-                      <TableHead>End Time</TableHead>
+                      <TableHead className="w-1/4">Title</TableHead>
+                      <TableHead className="w-1/4">Start Time</TableHead>
+                      <TableHead className="w-1/4">End Time</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {data.upcomingQuizzes?.map((quiz, index) => (
                       <TableRow key={quiz.id ?? `quiz-${index}`}>
-                        <TableCell>{quiz.title}</TableCell>
-                        <TableCell>{formatISTDate(quiz.startTime)}</TableCell>
-                        <TableCell>{formatISTDate(quiz.endTime)}</TableCell>
+                        <TableCell className="w-1/4">{quiz.title}</TableCell>
+                        <TableCell className="w-1/4">{formatISTDate(quiz.startTime)}</TableCell>
+                        <TableCell className="w-1/4">{formatISTDate(quiz.endTime)}</TableCell>
                       </TableRow>
                     )) ?? <TableRow><TableCell colSpan={3}>No quizzes available</TableCell></TableRow>}
                   </TableBody>
@@ -355,22 +358,22 @@ export default function StudentDashboardPage() {
               <p>No active quizzes</p>
             ) : (
               <div className="overflow-x-auto">
-                <Table>
+                <Table className="table-fixed w-full">
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Title</TableHead>
-                      <TableHead>Start Time</TableHead>
-                      <TableHead>End Time</TableHead>
-                      <TableHead>Attempt</TableHead>
+                      <TableHead className="w-1/4">Title</TableHead>
+                      <TableHead className="w-1/4">Start Time</TableHead>
+                      <TableHead className="w-1/4">End Time</TableHead>
+                      <TableHead className="w-1/4">Attempt</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {data.activeQuizzes?.map((quiz, index) => (
                       <TableRow key={quiz.id ?? `quiz-${index}`}>
-                        <TableCell>{quiz.title}</TableCell>
-                        <TableCell>{formatISTDate(quiz.startTime)}</TableCell>
-                        <TableCell>{formatISTDate(quiz.endTime)}</TableCell>
-                        <TableCell>
+                        <TableCell className="w-1/4">{quiz.title}</TableCell>
+                        <TableCell className="w-1/4">{formatISTDate(quiz.startTime)}</TableCell>
+                        <TableCell className="w-1/4">{formatISTDate(quiz.endTime)}</TableCell>
+                        <TableCell className="w-1/4">
                           <Button
                             variant={'grayscale'}
                             // className="bg-primary hover:bg-blue-700"
@@ -401,13 +404,13 @@ export default function StudentDashboardPage() {
             <p>No quizzes available</p>
           ) : (
             <div className="overflow-x-auto">
-              <Table>
+              <Table className="table-fixed w-full">
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Title</TableHead>
-                    <TableHead>Score</TableHead>
-                    <TableHead>Attempt Date</TableHead>
-                    <TableHead>Results</TableHead>
+                    <TableHead className="w-1/4">Title</TableHead>
+                    <TableHead className="w-1/4">Score</TableHead>
+                    <TableHead className="w-1/4">Attempt Date</TableHead>
+                    <TableHead className="w-1/4">Results</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -415,10 +418,10 @@ export default function StudentDashboardPage() {
                     const canViewResults = isQuizEnded(quiz.endTime);
                     return (
                       <TableRow key={quiz.quizId ?? `quiz-${index}`}>
-                        <TableCell>{quiz.title}</TableCell>
-                        <TableCell>{quiz.totalScore}</TableCell>
-                        <TableCell>{formatISTDate(quiz.attemptDate)}</TableCell>
-                        <TableCell>
+                        <TableCell className="w-1/4">{quiz.title}</TableCell>
+                        <TableCell className="w-1/4">{quiz.totalScore}</TableCell>
+                        <TableCell className="w-1/4">{formatISTDate(quiz.attemptDate)}</TableCell>
+                        <TableCell className="w-1/4">
                           <Button
                             variant={'grayscale'}
                             // className="bg-gray-400 hover:bg-gray-500"
