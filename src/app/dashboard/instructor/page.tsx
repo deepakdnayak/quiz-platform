@@ -33,12 +33,12 @@ const formatISTDate = (isoDate: string): string => {
 };
 
 // Utility to determine quiz status
-const getQuizStatus = (startTime: string, endTime: string): 'Active' | 'Upcoming' | 'Past' => {
+const getQuizStatus = (startTime: string, endTime: string): 'Active' | 'Upcoming' | 'Completed' => {
   const now = new Date();
   const start = new Date(startTime);
   const end = new Date(endTime);
   if (now < start) return 'Upcoming';
-  if (now > end) return 'Past';
+  if (now > end) return 'Completed';
   return 'Active';
 };
 
@@ -191,7 +191,7 @@ export default function InstructorDashboardPage() {
                           <Button
                             variant="outline"
                             size="sm"
-                            onClick={() => router.push(`/dashboard/instructor/quiz/${quiz.quizId}/resultsForInstructor`)}
+                            onClick={() => router.push(`/dashboard/instructor/quiz/${quiz.quizId}/resultsForInstructor?name=${encodeURIComponent(quiz.title)}`)}
                           >
                             View Results
                           </Button>

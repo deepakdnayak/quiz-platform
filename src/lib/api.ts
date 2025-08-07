@@ -72,7 +72,7 @@ export const getInstructorQuizzes = async (status: 'all' | 'active' | 'upcoming'
 
 export const getQuizStatistics = async (quizId: string): Promise<QuizStatistics> => {
   try {
-    const response = await api.get(`/api/quizzes/${quizId}/statistics`);
+    const response = await api.get(`/api/quizzes/${quizId}/statistics?refresh=true`);
     console.log('Get Quiz Statistics Response:', response.data); // Debug log
     return response.data;
   } catch (error: any) {

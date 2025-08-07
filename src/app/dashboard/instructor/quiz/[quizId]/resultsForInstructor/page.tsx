@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter, useParams } from 'next/navigation';
+import { useRouter, useParams, useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -62,11 +62,13 @@ const exportToCSV = (results: QuizResultForInstructor[], quizTitle: string) => {
 
 export default function QuizResultsPage() {
   const [results, setResults] = useState<QuizResultForInstructor[]>([]);
-  const [quizTitle, setQuizTitle] = useState<string>('Quiz Results');
+  // const [quizTitle, setQuizTitle] = useState<string>('Quiz Results');
   const [loading, setLoading] = useState(true);
   const router = useRouter();
   const params = useParams();
   const quizId = params.quizId as string;
+  const searchParams = useSearchParams();
+  const quizTitle = searchParams.get('name') as string  ;
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -78,12 +80,11 @@ export default function QuizResultsPage() {
 
     const fetchResults = async () => {
       try {
-        console.log("AAAAAAAAAAAA"+quizId)
         const response = await getQuizResultsForInstructor(quizId);
         console.log('Quiz Results API Response:', response); // Debug log
         setResults(response);
-        // Fetch quiz title (optional, could be passed from dashboard or via API)
-        setQuizTitle(`Quiz ${quizId}`); // Replace with actual quiz title if available
+        // // Fetch quiz title (optional, could be passed from dashboard or via API)
+        // setQuizTitle(`Quiz ${quizId}`); // Replace with actual quiz title if available
         toast.success('Quiz results loaded successfully');
       } catch (error: any) {
         console.error('Error fetching quiz results:', error); // Debug log
