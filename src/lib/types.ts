@@ -223,3 +223,11 @@ export interface UpdateProfileData {
   rollNumber: string | null;
 }
 
+export interface QuizResultForInstructor {
+  usn: string;
+  studentName: string;
+  score: number;
+  yearOfStudy: string;
+  rollNumber: string;
+  attemptDate: string;
+}

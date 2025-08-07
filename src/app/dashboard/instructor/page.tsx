@@ -191,9 +191,9 @@ export default function InstructorDashboardPage() {
                           <Button
                             variant="outline"
                             size="sm"
-                            onClick={() => router.push(`/dashboard/instructor/quiz/${quiz.quizId}/statistics`)}
+                            onClick={() => router.push(`/dashboard/instructor/quiz/${quiz.quizId}/resultsForInstructor`)}
                           >
-                            View Details
+                            View Results
                           </Button>
                         </TableCell>
                       </TableRow>
