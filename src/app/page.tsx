@@ -80,14 +80,16 @@ export default function Home() {
     setTimeout(() => ripple.remove(), 600);
   };
 
-  const token = localStorage.getItem('token');
-    if (token) {
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    const storedUser = localStorage.getItem('user');
+
+    if (token && storedUser) {
+      const parsedUser = JSON.parse(storedUser);
       toast.success('Welcome Back');
-      if(user){
-        router.push(`/dashboard/${user.role.toLowerCase()}`);
-      }
-      return;
+      router.push(`/dashboard/${parsedUser.role.toLowerCase()}`);
     }
+  }, []);
 
   return (
     <div className="flex flex-col bg-white">
