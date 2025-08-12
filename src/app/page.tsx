@@ -17,7 +17,7 @@ export default function Home() {
     totalStudents: 0,
     totalInstructors: 0,
   });
-  const [user, setUser] = useState<{ email: string; role: string } | null>(null);
+  // const [user, setUser] = useState<{ email: string; role: string } | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const buttonRef = useRef<HTMLButtonElement>(null);
   const { ref, inView } = useInView({
@@ -28,16 +28,16 @@ export default function Home() {
   const router = useRouter();
   const pathname = usePathname();
 
-  useEffect(() => {
-    const token = localStorage.getItem('token');
-    const storedUser = localStorage.getItem('user');
-    if (token && storedUser) {
-      setUser(JSON.parse(storedUser));
-    }
-    else {
-      setUser(null); // Clear user if no token or storedUser
-    }
-  }, [pathname]); 
+  // useEffect(() => {
+  //   const token = localStorage.getItem('token');
+  //   const storedUser = localStorage.getItem('user');
+  //   if (token && storedUser) {
+  //     setUser(JSON.parse(storedUser));
+  //   }
+  //   else {
+  //     setUser(null); // Clear user if no token or storedUser
+  //   }
+  // }, [pathname]); 
 
   // Fetch statistics
   useEffect(() => {
@@ -95,7 +95,7 @@ export default function Home() {
       toast.success('Welcome Back');
       router.push(`/dashboard/${parsedUser.role.toLowerCase()}`);
     }
-  }, []);
+  }, [router]);
 
   return (
     <div className="flex flex-col bg-white">

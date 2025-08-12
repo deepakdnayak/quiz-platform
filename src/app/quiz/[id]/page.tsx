@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { useForm, Controller } from 'react-hook-form';
 import { Button } from '@/components/ui/button';
@@ -70,34 +70,6 @@ export default function AttemptQuizPage() {
     };
   }, []);
 
-  // Handle tab switch or close
-  useEffect(() => {
-    const handleVisibilityChange = () => {
-      if (document.hidden) {
-        handleViolation();
-      }
-    };
-    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
-      if (violationCount === 0) {
-        e.preventDefault();
-        e.returnValue = ''; // Required for Chrome
-        handleViolation();
-      } else if (violationCount === 1) {
-        e.preventDefault();
-        submitQuizAutomatically();
-      }
-    };
-
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-    window.addEventListener('beforeunload', handleBeforeUnload);
-
-    // Clean up event listeners
-    return () => {
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
-      window.removeEventListener('beforeunload', handleBeforeUnload);
-    };
-  }, [violationCount]);
-
   const handleViolation = () => {
     if (violationCount === 0) {
       setViolationCount(1);
@@ -136,6 +108,34 @@ export default function AttemptQuizPage() {
     }
   };
 
+  // Handle tab switch or close
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
+        handleViolation();
+      }
+    };
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (violationCount === 0) {
+        e.preventDefault();
+        e.returnValue = ''; // Required for Chrome
+        handleViolation();
+      } else if (violationCount === 1) {
+        e.preventDefault();
+        submitQuizAutomatically();
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('beforeunload', handleBeforeUnload);
+
+    // Clean up event listeners
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+    };
+  }, [violationCount, handleViolation, submitQuizAutomatically]);
+
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (!token) {
@@ -171,24 +171,35 @@ export default function AttemptQuizPage() {
           selectedOptionIds: [],
         })));
         //enterFullscreen(); // Enter full-screen mode after quiz loads
-      } catch (error: any) {
+      } 
+      catch (error: unknown) {
         let errorMessage = 'Failed to load quiz';
-        if (error.response) {
-          if (error.response.status === 404) {
+
+        if (
+          typeof error === 'object' &&
+          error !== null &&
+          'response' in error &&
+          typeof (error as any).response === 'object'
+        ) {
+          const err = error as { response?: { status?: number; data?: { message?: string } } };
+
+          if (err.response?.status === 404) {
             errorMessage = 'Quiz not found';
-          } else if (error.response.status === 401) {
+          } else if (err.response?.status === 401) {
             errorMessage = 'Unauthorized access. Please log in again.';
             localStorage.removeItem('token');
             router.push('/auth/login');
-          } else if (error.response.status === 403) {
+          } else if (err.response?.status === 403) {
             errorMessage = 'You do not have permission to access this quiz';
           } else {
-            errorMessage = error.response.data?.message || errorMessage;
+            errorMessage = err.response?.data?.message || errorMessage;
           }
         }
+
         toast.error(errorMessage);
         router.push('/dashboard/student');
-      } finally {
+      }
+      finally {
         setLoading(false);
       }
     };
@@ -216,9 +227,17 @@ export default function AttemptQuizPage() {
       await submitQuizAttempt(id as string, data);
       toast.success('Quiz submitted successfully');
       router.push(`/quiz/${id}/results`);
-    } catch (error: any) {
-      toast.error(error.message || 'Failed to submit quiz');
-    } finally {
+    } 
+    catch (error: unknown) {
+        if (error instanceof Error) {
+          toast.error(error.message || 'Failed to submit quiz');
+        } else if (typeof error === 'string') {
+          toast.error(error || 'Failed to submit quiz');
+        } else {
+          toast.error('An unknown error occurred');
+        }
+      }
+    finally {
       setSubmitting(false);
       setShowConfirm(false);
     }
