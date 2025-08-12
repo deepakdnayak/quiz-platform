@@ -86,9 +86,14 @@ export default function StudentDashboardPage() {
           rollNumber: profileResponse.profile?.rollNumber || '',
         });
         toast.success('Dashboard and profile loaded successfully');
-      } catch (error: any) {
-        console.error('Error fetching data:', error); // Debug log
-        toast.error(error.message || 'Failed to load dashboard or profile');
+      } catch (error: unknown) {
+        if (error instanceof Error) {
+          toast.error(error.message || 'Failed to load dashboard or profile');
+        } else if (typeof error === 'string') {
+          toast.error(error || 'Failed to load dashboard or profile');
+        } else {
+          toast.error('An unknown error occurred');
+        }
       } finally {
         setLoading(false);
       }

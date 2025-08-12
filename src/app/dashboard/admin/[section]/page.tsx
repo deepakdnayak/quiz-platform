@@ -48,9 +48,14 @@ export default function AdminDashboardPage() {
         setStats(statsResponse);
         setNotifications(notificationsResponse);
         toast.success('Dashboard loaded successfully');
-      } catch (error: any) {
-        console.error('Error fetching admin data:', error);
-        toast.error(error.message || 'Failed to load dashboard');
+      } catch (error: unknown) {
+        if (error instanceof Error) {
+          toast.error(error.message);
+        } else if (typeof error === 'string') {
+          toast.error(error);
+        } else {
+          toast.error('An unknown error occurred');
+        }
       } finally {
         setLoading(false);
       }
@@ -132,8 +137,15 @@ export default function AdminDashboardPage() {
       setProgress({ ...progress, [user.id]: userProgress });
       setSelectedUser(user);
       toast.success('User progress loaded');
-    } catch (error: any) {
-      toast.error(error.message);
+    }
+    catch (error: unknown) {
+      if (error instanceof Error) {
+        toast.error(error.message);
+      } else if (typeof error === 'string') {
+        toast.error(error);
+      } else {
+        toast.error('An unknown error occurred');
+      }
     }
   };
 

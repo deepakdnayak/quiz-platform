@@ -32,8 +32,14 @@ export default function LoginPage() {
       localStorage.setItem('user', JSON.stringify(response.user));
       toast.success('Logged in successfully');
       router.push(`/`);
-    } catch (error: any) {
-      toast.error(error.message);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        toast.error(error.message);
+      } else if (typeof error === 'string') {
+        toast.error(error);
+      } else {
+        toast.error('An unknown error occurred');
+      }
     } finally {
       setIsLoading(false);
     }

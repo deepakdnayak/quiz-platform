@@ -29,9 +29,15 @@ export default function QuizResultsPage() {
         const response = await getQuizResults(id as string);
         console.log('Quiz Results API Response:', response); // Debug log
         setResults(response);
-      } catch (error: any) {
-        console.error('Error fetching quiz results:', error);
-        toast.error(error.message || 'Failed to load results');
+      } 
+      catch (error: unknown) {
+        if (error instanceof Error) {
+          toast.error(error.message || 'Failed to load results');
+        } else if (typeof error === 'string') {
+          toast.error(error || 'Failed to load results');
+        } else {
+          toast.error('An unknown error occurred');
+        }
         router.push('/dashboard/student');
       } finally {
         setLoading(false);

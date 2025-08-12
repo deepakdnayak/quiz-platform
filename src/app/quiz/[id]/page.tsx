@@ -120,8 +120,15 @@ export default function AttemptQuizPage() {
         await submitQuizAttempt(id as string, formData);
         toast.success('Quiz submitted due to violation');
         router.push('/dashboard/student');
-      } catch (error: any) {
-        toast.error('Failed to submit quiz automatically');
+      } 
+      catch (error: unknown) {
+        if (error instanceof Error) {
+          toast.error(error.message || 'Failed to submit quiz automatically');
+        } else if (typeof error === 'string') {
+          toast.error(error || 'Failed to submit quiz automatically');
+        } else {
+          toast.error('An unknown error occurred');
+        }
         router.push('/dashboard/student');
       } finally {
         setSubmitting(false);

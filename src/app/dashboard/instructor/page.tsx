@@ -87,10 +87,17 @@ export default function InstructorDashboardPage() {
         setQuizStats(statsMap);
 
         toast.success('Dashboard and quiz data loaded successfully');
-      } catch (error: any) {
-        console.error('Error fetching instructor dashboard:', error); // Debug log
-        toast.error(error.message || 'Failed to load dashboard');
-      } finally {
+      } 
+      catch (error: unknown) {
+        if (error instanceof Error) {
+          toast.error(error.message || 'Failed to load dashboard');
+        } else if (typeof error === 'string') {
+          toast.error(error || 'Failed to load dashboard');
+        } else {
+          toast.error('An unknown error occurred');
+        }
+      }
+       finally {
         setLoading(false);
       }
     };

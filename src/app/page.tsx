@@ -46,9 +46,15 @@ export default function Home() {
         const data = await getStatistics();
         setStats(data.stats);
         setLoading(false);
-      } catch (error: any) {
-        console.error('Error fetching stats:', error);
-        toast.error(error.message || 'Failed to load statistics');
+      }
+      catch (error: unknown) {
+        if (error instanceof Error) {
+          toast.error(error.message || 'Failed to load statistics');
+        } else if (typeof error === 'string') {
+          toast.error(error || 'Failed to load statistics');
+        } else {
+          toast.error('An unknown error occurred');
+        }
         setStats({
           totalQuizzes: 0,
           totalStudents: 0,

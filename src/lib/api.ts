@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { CreateQuizForm, QuizResultForInstructor,StatsResponse ,StudentDashboard, InstructorDashboard, InstructorQuiz, QuizStatistics, QuizDetails, QuizAttempt, QuizResults, Profile, ProfileResponse, UpdateProfileData } from './types';
+import { CreateQuizForm, QuizResultForInstructor,StatsResponse, InstructorDashboard, InstructorQuiz, QuizStatistics, QuizDetails, QuizAttempt, QuizResults, Profile, ProfileResponse, UpdateProfileData } from './types';
 
 
 const baseURL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
@@ -26,7 +26,9 @@ export const register = async (data: { email: string; password: string; role: st
   try {
     const response = await api.post('/api/auth/register', data);
     return response.data;
-  } catch (error: any) {
+  } 
+  
+  catch (error: any) {
     throw new Error(error.response?.data?.error || 'Registration failed');
   }
 };
@@ -35,8 +37,13 @@ export const login = async (data: { email: string; password: string }) => {
   try {
     const response = await api.post('/api/auth/login', data);
     return response.data;
-  } catch (error: any) {
-    throw new Error(error.response?.data?.error || 'Login failed');
+  } 
+  catch (error: unknown) {
+    if (error instanceof Error && 'response' in error) {
+      const err = error as { response?: { data?: { error?: string } } };
+      throw new Error(err.response?.data?.error || 'Login failed');
+    }
+    throw new Error('Login failed');
   }
 };
 
@@ -45,8 +52,13 @@ export const getStudentDashboard = async () => {
     const response = await api.get('/api/students/dashboard');
     console.log('Student Dashboard Response:', response.data); // Debug log
     return response.data;
-  } catch (error: any) {
-    throw new Error(error.response?.data?.error || 'Failed to fetch student dashboard');
+  }
+  catch (error: unknown) {
+    if (error instanceof Error && 'response' in error) {
+      const err = error as { response?: { data?: { error?: string } } };
+      throw new Error(err.response?.data?.error || 'Failed to fetch student dashboard');
+    }
+    throw new Error('Failed to fetch student dashboard');
   }
 };
 
@@ -55,8 +67,13 @@ export const getInstructorDashboard = async (): Promise<InstructorDashboard> => 
     const response = await api.get('/api/instructors/dashboard');
     console.log('Get Instructor Dashboard Response:', response.data); // Debug log
     return response.data;
-  } catch (error: any) {
-    throw new Error(error.response?.data?.error || 'Failed to fetch instructor dashboard');
+  } 
+  catch (error: unknown) {
+    if (error instanceof Error && 'response' in error) {
+      const err = error as { response?: { data?: { error?: string } } };
+      throw new Error(err.response?.data?.error || 'Failed to fetch instructor dashboard');
+    }
+    throw new Error('Failed to fetch instructor dashboard');
   }
 };
 
@@ -65,8 +82,13 @@ export const getInstructorQuizzes = async (status: 'all' | 'active' | 'upcoming'
     const response = await api.get('/api/instructors/quizzes', { params: { status } });
     console.log('Get Instructor Quizzes Response:', response.data); // Debug log
     return response.data;
-  } catch (error: any) {
-    throw new Error(error.response?.data?.error || 'Failed to fetch instructor quizzes');
+  }
+  catch (error: unknown) {
+    if (error instanceof Error && 'response' in error) {
+      const err = error as { response?: { data?: { error?: string } } };
+      throw new Error(err.response?.data?.error || 'Failed to fetch instructor quizzes');
+    }
+    throw new Error('Failed to fetch instructor quizzes');
   }
 };
 
@@ -75,8 +97,13 @@ export const getQuizStatistics = async (quizId: string): Promise<QuizStatistics>
     const response = await api.get(`/api/quizzes/${quizId}/statistics?refresh=true`);
     console.log('Get Quiz Statistics Response:', response.data); // Debug log
     return response.data;
-  } catch (error: any) {
-    throw new Error(error.response?.data?.error || 'Failed to fetch quiz statistics');
+  } 
+  catch (error: unknown) {
+    if (error instanceof Error && 'response' in error) {
+      const err = error as { response?: { data?: { error?: string } } };
+      throw new Error(err.response?.data?.error || 'Failed to fetch quiz statistics');
+    }
+    throw new Error('Failed to fetch quiz statistics');
   }
 };
 
@@ -85,8 +112,13 @@ export const getAdminStatistics = async () => {
     const response = await api.get('/api/admin/statistics');
     console.log('Admin Statistics Response:', response.data); // Debug log
     return response.data;
-  } catch (error: any) {
-    throw new Error(error.response?.data?.error || 'Failed to fetch admin statistics');
+  } 
+  catch (error: unknown) {
+    if (error instanceof Error && 'response' in error) {
+      const err = error as { response?: { data?: { error?: string } } };
+      throw new Error(err.response?.data?.error || 'Failed to fetch admin statistics');
+    }
+    throw new Error('Failed to fetch admin statistics');
   }
 };
 
@@ -94,8 +126,13 @@ export const deleteUser = async (userId: string) => {
   try {
     const response = await api.delete(`/api/admin/users/${userId}`);
     return response.data;
-  } catch (error: any) {
-    throw new Error(error.response?.data?.error || 'Failed to delete user');
+  } 
+  catch (error: unknown) {
+    if (error instanceof Error && 'response' in error) {
+      const err = error as { response?: { data?: { error?: string } } };
+      throw new Error(err.response?.data?.error || 'Failed to delete user');
+    }
+    throw new Error('Failed to delete user');
   }
 };
 
@@ -103,8 +140,13 @@ export const updateUserRole = async (userId: string, role: string) => {
   try {
     const response = await api.patch(`/api/admin/users/${userId}/role`, { role });
     return response.data;
-  } catch (error: any) {
-    throw new Error(error.response?.data?.error || 'Failed to update user role');
+  } 
+  catch (error: unknown) {
+    if (error instanceof Error && 'response' in error) {
+      const err = error as { response?: { data?: { error?: string } } };
+      throw new Error(err.response?.data?.error || 'Failed to update user role');
+    }
+    throw new Error('Failed to update user role');
   }
 };
 
@@ -112,8 +154,13 @@ export const approveUser = async (userId: string) => {
   try {
     const response = await api.post(`/api/admin/users/${userId}/approve`);
     return response.data;
-  } catch (error: any) {
-    throw new Error(error.response?.data?.error || 'Failed to approve user');
+  }
+  catch (error: unknown) {
+    if (error instanceof Error && 'response' in error) {
+      const err = error as { response?: { data?: { error?: string } } };
+      throw new Error(err.response?.data?.error || 'Failed to approve user');
+    }
+    throw new Error('Failed to approve user');
   }
 };
 
@@ -122,8 +169,13 @@ export const getUserProgress = async (userId: string) => {
     const response = await api.get(`/api/admin/students/${userId}/progress`);
     console.log('User Progress Response:', response.data); // Debug log
     return response.data;
-  } catch (error: any) {
-    throw new Error(error.response?.data?.error || 'Failed to fetch user progress');
+  }
+  catch (error: unknown) {
+    if (error instanceof Error && 'response' in error) {
+      const err = error as { response?: { data?: { error?: string } } };
+      throw new Error(err.response?.data?.error || 'Failed to fetch user progress');
+    }
+    throw new Error('Failed to fetch user progress');
   }
 };
 
@@ -132,8 +184,13 @@ export const getNotifications = async () => {
     const response = await api.get('/api/admin/notifications');
     console.log('Notifications Response:', response.data); // Debug log
     return response.data;
-  } catch (error: any) {
-    throw new Error(error.response?.data?.error || 'Failed to fetch notifications');
+  } 
+  catch (error: unknown) {
+    if (error instanceof Error && 'response' in error) {
+      const err = error as { response?: { data?: { error?: string } } };
+      throw new Error(err.response?.data?.error || 'Failed to fetch notifications');
+    }
+    throw new Error('Failed to fetch notifications');
   }
 };
 
@@ -142,8 +199,13 @@ export const createQuiz = async (data: CreateQuizForm) => {
     const response = await api.post('/api/quizzes', data);
     console.log('Create Quiz Response:', response.data); // Debug log
     return response.data;
-  } catch (error: any) {
-    throw new Error(error.response?.data?.error || 'Failed to create quiz');
+  } 
+  catch (error: unknown) {
+    if (error instanceof Error && 'response' in error) {
+      const err = error as { response?: { data?: { error?: string } } };
+      throw new Error(err.response?.data?.error || 'Failed to create quiz');
+    }
+    throw new Error('Failed to create quiz');
   }
 };
 
@@ -151,8 +213,13 @@ export const getQuizDetails = async (quizId: string): Promise<QuizDetails> => {
   try {
     const response = await api.get(`/api/quizzes/${quizId}`);
     return response.data;
-  } catch (error: any) {
-    throw new Error(error.response?.data?.message || 'Failed to fetch quiz details');
+  } 
+  catch (error: unknown) {
+    if (error instanceof Error && 'response' in error) {
+      const err = error as { response?: { data?: { error?: string } } };
+      throw new Error(err.response?.data?.error || 'Failed to fetch quiz details');
+    }
+    throw new Error('Failed to fetch quiz details');
   }
 };
 
@@ -160,8 +227,13 @@ export const submitQuizAttempt = async (quizId: string, data: QuizAttempt): Prom
   try {
     const response = await api.post(`/api/quizzes/${quizId}/attempt`, { answers: data.answers });
     return response.data;
-  } catch (error: any) {
-    throw new Error(error.response?.data?.message || 'Failed to submit quiz attempt');
+  } 
+  catch (error: unknown) {
+    if (error instanceof Error && 'response' in error) {
+      const err = error as { response?: { data?: { error?: string } } };
+      throw new Error(err.response?.data?.error || 'Failed to submit quiz attempt');
+    }
+    throw new Error('Failed to submit quiz attempt');
   }
 };
 
@@ -169,8 +241,13 @@ export const getQuizResults = async (quizId: string): Promise<QuizResults> => {
   try {
     const response = await api.get(`/api/quizzes/${quizId}/results`);
     return response.data;
-  } catch (error: any) {
-    throw new Error(error.response?.data?.message || 'Failed to fetch quiz results');
+  } 
+  catch (error: unknown) {
+    if (error instanceof Error && 'response' in error) {
+      const err = error as { response?: { data?: { error?: string } } };
+      throw new Error(err.response?.data?.error || 'Failed to fetch quiz results');
+    }
+    throw new Error('Failed to fetch quiz results');
   }
 };
 
@@ -190,8 +267,13 @@ export const getProfile = async (): Promise<ProfileResponse> => {
     const response = await api.get('/api/users/profile');
     console.log('Get Profile Response:', response.data); // Debug log
     return response.data;
-  } catch (error: any) {
-    throw new Error(error.response?.data?.error || 'Failed to fetch profile');
+  } 
+  catch (error: unknown) {
+    if (error instanceof Error && 'response' in error) {
+      const err = error as { response?: { data?: { error?: string } } };
+      throw new Error(err.response?.data?.error || 'Failed to fetch profile');
+    }
+    throw new Error('Failed to fetch profile');
   }
 };
 
@@ -200,8 +282,13 @@ export const updateProfile = async (data: UpdateProfileData): Promise<{ profile:
     const response = await api.put('/api/users/profile', data);
     console.log('Update Profile Response:', response.data); // Debug log
     return response.data;
-  } catch (error: any) {
-    throw new Error(error.response?.data?.error || 'Failed to update profile');
+  } 
+  catch (error: unknown) {
+    if (error instanceof Error && 'response' in error) {
+      const err = error as { response?: { data?: { error?: string } } };
+      throw new Error(err.response?.data?.error || 'Failed to update profile');
+    }
+    throw new Error('Failed to update profile');
   }
 };
 
@@ -210,8 +297,13 @@ export const getQuizResultsForInstructor = async (quizId: string): Promise<QuizR
     const response = await api.get(`/api/quizzes/${quizId}/resultsForInstructor`);
     console.log('Get Quiz Results Response:', response.data); // Debug log
     return response.data;
-  } catch (error: any) {
-    throw new Error(error.response?.data?.error || 'Failed to fetch quiz results');
+  } 
+  catch (error: unknown) {
+    if (error instanceof Error && 'response' in error) {
+      const err = error as { response?: { data?: { error?: string } } };
+      throw new Error(err.response?.data?.error || 'Failed to fetch quiz results');
+    }
+    throw new Error('Failed to fetch quiz results');
   }
 };
 
@@ -220,7 +312,12 @@ export const getStatistics = async (): Promise<StatsResponse> => {
     const response = await api.get('/api/users/getUserCount');
     console.log('Get Statistics Response:', response.data); // Debug log
     return response.data;
-  } catch (error: any) {
-    throw new Error(error.response?.data?.error || 'Failed to fetch statistics');
+  } 
+  catch (error: unknown) {
+    if (error instanceof Error && 'response' in error) {
+      const err = error as { response?: { data?: { error?: string } } };
+      throw new Error(err.response?.data?.error || 'Failed to fetch statistics');
+    }
+    throw new Error('Failed to fetch statistics');
   }
 };
