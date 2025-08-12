@@ -15,6 +15,8 @@ import { toast } from 'sonner';
 import { createQuiz } from '@/lib/api';
 import { CreateQuizForm } from '@/lib/types';
 import 'react-datetime-picker/dist/DateTimePicker.css';
+import { Control, UseFormRegister, FieldErrors } from 'react-hook-form';
+
 
 // Custom CSS to fix DateTimePicker transparency and styling
 const customStyles = `
@@ -47,17 +49,20 @@ function QuestionField({
   removeQuestion,
   questionsLength,
 }: {
-  control: any;
-  register: any;
-  errors: any;
+  control: Control<CreateQuizForm>;
+  register: UseFormRegister<CreateQuizForm>;
+  errors: FieldErrors<CreateQuizForm>;
   qIndex: number;
   removeQuestion: (index: number) => void;
   questionsLength: number;
 }) {
-  const { fields: options, append: appendOption, remove: removeOption } = useFieldArray({
-    control,
-    name: `questions.${qIndex}.options`,
-  });
+  const { fields: options, append: appendOption, remove: removeOption } = useFieldArray<
+  CreateQuizForm,
+  `questions.${number}.options`
+>({
+  control,
+  name: `questions.${qIndex}.options`,
+});
 
   return (
     <Card className="p-6 bg-white shadow-sm">
@@ -97,7 +102,7 @@ function QuestionField({
         <div>
           <Label className="text-lg font-medium">Options</Label>
           <div className="space-y-3 mt-2">
-            {options.map((option: any, oIndex: number) => (
+            {options.map((option, oIndex) => (
               <div key={option.id} className="flex items-center space-x-3">
                 <Controller
                   control={control}
@@ -200,9 +205,15 @@ export default function CreateQuizPage() {
       await createQuiz(data);
       toast.success('Quiz created successfully');
       router.push('/dashboard/instructor');
-    } catch (error: any) {
-      toast.error(error.message);
-    } finally {
+    } catch (error: unknown) {
+        if (error instanceof Error) {
+          toast.error(error.message || 'Failed to load dashboard');
+        } else if (typeof error === 'string') {
+          toast.error(error || 'Failed to load dashboard');
+        } else {
+          toast.error('An unknown error occurred');
+        }
+      } finally {
       setSubmitting(false);
     }
   };

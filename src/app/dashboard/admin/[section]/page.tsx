@@ -78,9 +78,15 @@ export default function AdminDashboardPage() {
       }));
       setNotifications(notifications.filter((notif) => notif.userId !== userId));
       toast.success('User deleted successfully');
-    } catch (error: any) {
-      toast.error(error.message);
-    }
+    } catch (error: unknown) {
+        if (error instanceof Error) {
+          toast.error(error.message);
+        } else if (typeof error === 'string') {
+          toast.error(error);
+        } else {
+          toast.error('An unknown error occurred');
+        }
+      }
   };
 
   const handleRoleChange = async (userId: string, role: 'Student' | 'Instructor' | 'Admin') => {
@@ -105,9 +111,15 @@ export default function AdminDashboardPage() {
         }));
       }
       toast.success('User role updated');
-    } catch (error: any) {
-      toast.error(error.message);
-    }
+    } catch (error: unknown) {
+        if (error instanceof Error) {
+          toast.error(error.message || 'Failed to load dashboard');
+        } else if (typeof error === 'string') {
+          toast.error(error || 'Failed to load dashboard');
+        } else {
+          toast.error('An unknown error occurred');
+        }
+      }
   };
 
   const handleApprove = async (userId: string) => {
@@ -121,9 +133,15 @@ export default function AdminDashboardPage() {
       }));
       setNotifications(notifications.filter((notif) => notif.userId !== userId));
       toast.success('User approved as instructor');
-    } catch (error: any) {
-      toast.error(error.message);
-    }
+    } catch (error: unknown) {
+        if (error instanceof Error) {
+          toast.error(error.message || 'Failed to load dashboard');
+        } else if (typeof error === 'string') {
+          toast.error(error || 'Failed to load dashboard');
+        } else {
+          toast.error('An unknown error occurred');
+        }
+      }
   };
 
   const handleViewProgress = async (user: { id: string; email: string }) => {
