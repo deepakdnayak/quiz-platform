@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { useRouter, usePathname } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { BookOpen, Users, Award } from 'lucide-react';
@@ -26,7 +26,7 @@ export default function Home() {
   });
 
   const router = useRouter();
-  const pathname = usePathname();
+  // const pathname = usePathname();
 
   // useEffect(() => {
   //   const token = localStorage.getItem('token');

@@ -134,7 +134,7 @@ export default function AttemptQuizPage() {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
       window.removeEventListener('beforeunload', handleBeforeUnload);
     };
-  }, [violationCount, handleViolation, submitQuizAutomatically]);
+  }, [violationCount]);
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -175,30 +175,30 @@ export default function AttemptQuizPage() {
       catch (error: unknown) {
         let errorMessage = 'Failed to load quiz';
 
-        if (
-          typeof error === 'object' &&
-          error !== null &&
-          'response' in error &&
-          typeof (error as any).response === 'object'
-        ) {
-          const err = error as { response?: { status?: number; data?: { message?: string } } };
+        if (typeof error === 'object' && error !== null) {
+          const errObj = error as Record<string, unknown>;
 
-          if (err.response?.status === 404) {
-            errorMessage = 'Quiz not found';
-          } else if (err.response?.status === 401) {
-            errorMessage = 'Unauthorized access. Please log in again.';
-            localStorage.removeItem('token');
-            router.push('/auth/login');
-          } else if (err.response?.status === 403) {
-            errorMessage = 'You do not have permission to access this quiz';
-          } else {
-            errorMessage = err.response?.data?.message || errorMessage;
+          if ('response' in errObj && typeof errObj.response === 'object' && errObj.response !== null) {
+            const err = errObj as { response?: { status?: number; data?: { message?: string } } };
+
+            if (err.response?.status === 404) {
+              errorMessage = 'Quiz not found';
+            } else if (err.response?.status === 401) {
+              errorMessage = 'Unauthorized access. Please log in again.';
+              localStorage.removeItem('token');
+              router.push('/auth/login');
+            } else if (err.response?.status === 403) {
+              errorMessage = 'You do not have permission to access this quiz';
+            } else {
+              errorMessage = err.response?.data?.message || errorMessage;
+            }
           }
         }
 
         toast.error(errorMessage);
         router.push('/dashboard/student');
       }
+
       finally {
         setLoading(false);
       }

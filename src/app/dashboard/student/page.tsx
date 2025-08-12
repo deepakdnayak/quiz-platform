@@ -119,8 +119,15 @@ export default function StudentDashboardPage() {
       localStorage.setItem('profile', JSON.stringify(response.profile));
       window.dispatchEvent(new Event('storageChange')); // Notify Navbar
       toast.success('Profile updated successfully');
-    } catch (error: any) {
-      toast.error(error.message || 'Failed to update profile');
+    } 
+    catch (error: unknown) {
+      if (error instanceof Error) {
+        toast.error(error.message || 'Failed to update profile');
+      } else if (typeof error === 'string') {
+        toast.error(error || 'Failed to update profile');
+      } else {
+        toast.error('An unknown error occurred');
+      }
     }
   };
 
