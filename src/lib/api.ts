@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { CreateQuizForm, QuizResultForInstructor,StatsResponse, InstructorDashboard, InstructorQuiz, QuizStatistics, QuizDetails, QuizAttempt, QuizResults, Profile, ProfileResponse, UpdateProfileData } from './types';
+import { CreateQuizForm, QuizResultForInstructor,StatsResponse, InstructorDashboard, InstructorQuiz, QuizStatistics, QuizDetails, QuizAttempt, QuizResults, Profile, ProfileResponse, UpdateProfileData, ForgotPasswordResponse } from './types';
 
 
 const baseURL = process.env.NEXT_PUBLIC_NODE_ENV=="production" ? process.env.NEXT_PUBLIC_API_URL : 'http://localhost:5000'; 
@@ -322,5 +322,47 @@ export const getStatistics = async (): Promise<StatsResponse> => {
       throw new Error(err.response?.data?.error || 'Failed to fetch statistics');
     }
     throw new Error('Failed to fetch statistics');
+  }
+};
+
+export const sendResetOTP = async (data: { email: string }): Promise<ForgotPasswordResponse> => {
+  try {
+    const response = await api.post('/api/auth/forgot-password', data);
+    return response.data;
+  } 
+  catch (error: unknown) {
+    if (error instanceof Error && 'response' in error) {
+      const err = error as { response?: { data?: { error?: string } } };
+      throw new Error(err.response?.data?.error || 'Failed to send OTP');
+    }
+    throw new Error('Failed to send OTP');
+  }
+};
+
+export const verifyResetOTP = async (data: { email: string; otp: string }): Promise<ForgotPasswordResponse> => {
+  try {
+    const response = await api.post('/api/auth/verify-otp', data);
+    return response.data;
+  } 
+  catch (error: unknown) {
+    if (error instanceof Error && 'response' in error) {
+      const err = error as { response?: { data?: { error?: string } } };
+      throw new Error(err.response?.data?.error || 'Failed to verify OTP');
+    }
+    throw new Error('Failed to verify OTP');
+  }
+};
+
+export const resetPassword = async (data: { email: string; newPassword: string }): Promise<ForgotPasswordResponse> => {
+  try {
+    const response = await api.post('/api/auth/reset-password', data);
+    return response.data;
+  } 
+  catch (error: unknown) {
+    if (error instanceof Error && 'response' in error) {
+      const err = error as { response?: { data?: { error?: string } } };
+      throw new Error(err.response?.data?.error || 'Failed to reset password');
+    }
+    throw new Error('Failed to reset password');
   }
 };

@@ -243,3 +243,9 @@ export interface Stats {
 export interface StatsResponse {
   stats: Stats;
 }
+
+// Add to existing types.ts
+export interface ForgotPasswordResponse {
+  success: boolean;
+  message: string;
+}

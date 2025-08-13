@@ -6,8 +6,9 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { toast } from 'sonner';
-import { login } from '@/lib/api';
+import { login, sendResetOTP, verifyResetOTP, resetPassword } from '@/lib/api';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -15,7 +16,15 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
-  // 🔒 Redirect if already logged in
+  // Forgot Password states
+  const [forgotOpen, setForgotOpen] = useState(false);
+  const [forgotStep, setForgotStep] = useState(1); // 1: Enter email, 2: Enter OTP, 3: Enter new password
+  const [forgotEmail, setForgotEmail] = useState('');
+  const [otp, setOtp] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [forgotLoading, setForgotLoading] = useState(false);
+
+  // Redirect if already logged in
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (token) {
@@ -31,7 +40,7 @@ export default function LoginPage() {
       localStorage.setItem('token', response.token);
       localStorage.setItem('user', JSON.stringify(response.user));
       toast.success('Logged in successfully');
-      router.push(`/`);
+      router.push('/');
     } catch (error: unknown) {
       if (error instanceof Error) {
         toast.error(error.message);
@@ -42,6 +51,49 @@ export default function LoginPage() {
       }
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleSendOTP = async () => {
+    setForgotLoading(true);
+    try {
+      await sendResetOTP({ email: forgotEmail });
+      toast.success('OTP sent to your email');
+      setForgotStep(2);
+    } catch (error: unknown) {
+      toast.error((error as Error).message || 'Failed to send OTP');
+    } finally {
+      setForgotLoading(false);
+    }
+  };
+
+  const handleVerifyOTP = async () => {
+    setForgotLoading(true);
+    try {
+      await verifyResetOTP({ email: forgotEmail, otp });
+      toast.success('OTP verified');
+      setForgotStep(3);
+    } catch (error: unknown) {
+      toast.error((error as Error).message || 'Invalid OTP');
+    } finally {
+      setForgotLoading(false);
+    }
+  };
+
+  const handleResetPassword = async () => {
+    setForgotLoading(true);
+    try {
+      await resetPassword({ email: forgotEmail, newPassword });
+      toast.success('Password reset successful. Please log in.');
+      setForgotOpen(false);
+      setForgotStep(1);
+      setForgotEmail('');
+      setOtp('');
+      setNewPassword('');
+    } catch (error: unknown) {
+      toast.error((error as Error).message || 'Failed to reset password');
+    } finally {
+      setForgotLoading(false);
     }
   };
 
@@ -74,7 +126,7 @@ export default function LoginPage() {
                 required
               />
             </div>
-            <Button type="submit" className="w-full" variant={'grayscale'} disabled={isLoading}>
+            <Button type="submit" className="w-full" variant="grayscale" disabled={isLoading}>
               {isLoading ? 'Logging in...' : 'Login'}
             </Button>
           </form>
@@ -83,6 +135,64 @@ export default function LoginPage() {
             <Link href="/auth/register" className="text-primary hover:underline">
               Register
             </Link>
+          </p>
+          <p className="text-center text-sm mt-2">
+            <Dialog open={forgotOpen} onOpenChange={setForgotOpen}>
+              <DialogTrigger asChild>
+                <Button variant="link" className="p-0 text-primary hover:underline">
+                  Forgot Password?
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-md bg-white">
+                <DialogHeader>
+                  <DialogTitle>Forgot Password</DialogTitle>
+                </DialogHeader>
+                <div className="space-y-4 py-4">
+                  {forgotStep === 1 && (
+                    <>
+                      <Input
+                        type="email"
+                        placeholder="Enter your email"
+                        value={forgotEmail}
+                        onChange={(e) => setForgotEmail(e.target.value)}
+                        required
+                      />
+                      <Button variant="grayscale" onClick={handleSendOTP} disabled={forgotLoading} className="w-full">
+                        {forgotLoading ? 'Sending...' : 'Send OTP'}
+                      </Button>
+                    </>
+                  )}
+                  {forgotStep === 2 && (
+                    <>
+                      <Input
+                        type="text"
+                        placeholder="Enter OTP"
+                        value={otp}
+                        onChange={(e) => setOtp(e.target.value)}
+                        required
+                      />
+                      <Button variant="grayscale" onClick={handleVerifyOTP} disabled={forgotLoading} className="w-full">
+                        {forgotLoading ? 'Verifying...' : 'Verify OTP'}
+                      </Button>
+                    </>
+                  )}
+                  {forgotStep === 3 && (
+                    <>
+                      <Input
+                        type="password"
+                        placeholder="Enter new password"
+                        value={newPassword}
+                        onChange={(e) => setNewPassword(e.target.value)}
+                        required
+                      />
+                      <Button variant="grayscale" onClick={handleResetPassword} disabled={forgotLoading} className="w-full">
+                        {forgotLoading ? 'Resetting...' : 'Reset Password'}
+                      </Button>
+                    </>
+                  )}
+                </div>
+              </DialogContent>
+            </Dialog>
           </p>
         </CardContent>
       </Card>
