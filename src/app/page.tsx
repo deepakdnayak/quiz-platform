@@ -111,27 +111,11 @@ export default function Home() {
           <div className="flex justify-center gap-4">
             <Link href="/auth/register">
               <Button
-                ref={buttonRef}
+                variant="default"
                 onClick={handleClick}
                 className="relative bg-white text-blue-600 hover:bg-gray-100 font-semibold py-3 px-6 rounded-md overflow-hidden text-lg"
               >
-                Get Started
-                <style jsx>{`
-                  .ripple {
-                    position: absolute;
-                    border-radius: 50%;
-                    background: rgba(255, 255, 255, 0.4);
-                    transform: scale(0);
-                    animation: ripple 600ms linear;
-                    pointer-events: none;
-                  }
-                  @keyframes ripple {
-                    to {
-                      transform: scale(4);
-                      opacity: 0;
-                    }
-                  }
-                `}</style>
+                Sign Up
               </Button>
             </Link>
             <Link href="/auth/login">

@@ -2,7 +2,7 @@ import axios from 'axios';
 import { CreateQuizForm, QuizResultForInstructor,StatsResponse, InstructorDashboard, InstructorQuiz, QuizStatistics, QuizDetails, QuizAttempt, QuizResults, Profile, ProfileResponse, UpdateProfileData } from './types';
 
 
-const baseURL = process.env.NEXT_PUBLIC_API_URL || 'https://csd-backend.vercel.app/';
+const baseURL = process.env.NEXT_PUBLIC_NODE_ENV=="production" ? process.env.NEXT_PUBLIC_API_URL : 'http://localhost:5000'; 
 console.log('API baseURL:', baseURL); // Debug log
 
 const api = axios.create({

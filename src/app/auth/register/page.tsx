@@ -50,10 +50,10 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-[calc(100vh-64px)] bg-background">
+    <div className="flex items-center justify-center min-h-[calc(100vh-70px)] bg-background">
       <Card className="w-full max-w-md shadow-xl">
-        <CardHeader>
-          <CardTitle>Register</CardTitle>
+        <CardHeader className="text-center space-y-1 pb-2">
+          <CardTitle className="text-2xl font-bold tracking-tight">Register</CardTitle>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">

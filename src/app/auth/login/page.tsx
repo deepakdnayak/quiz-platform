@@ -46,10 +46,13 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="flex items-center justify-center h-[calc(100vh-64px)] bg-background">
-      <Card className="w-full max-w-md">
-        <CardHeader>
-          <CardTitle>Login</CardTitle>
+    <div className="flex items-center justify-center h-[calc(100vh-70px)] bg-background">
+      <Card className="w-full max-w-md shadow-xl">
+        <CardHeader className="text-center space-y-1 pb-2">
+          <CardTitle className="text-2xl font-bold tracking-tight">Welcome Back</CardTitle>
+          <p className="text-sm text-muted-foreground">
+            Sign in to your account
+          </p>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
