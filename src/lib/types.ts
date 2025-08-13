@@ -61,6 +61,7 @@ export interface InstructorDashboard {
   }[];
   averageAttemptsPerQuiz: number;
   averageScoreAcrossQuizzes: number;
+  isApproved: boolean;
 }
 
 export interface InstructorQuiz {

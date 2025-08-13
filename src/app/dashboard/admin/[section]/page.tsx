@@ -28,6 +28,7 @@ export default function AdminDashboardPage() {
   const [progress, setProgress] = useState<{ [userId: string]: UserProgress | null }>({});
   const [selectedUser, setSelectedUser] = useState<{ id: string; email: string } | null>(null);
   const [loading, setLoading] = useState(true);
+  const [filterYear, setFilterYear] = useState<string>(''); // New state for year filter
   const router = useRouter();
   const { section } = useParams();
 
@@ -79,14 +80,14 @@ export default function AdminDashboardPage() {
       setNotifications(notifications.filter((notif) => notif.userId !== userId));
       toast.success('User deleted successfully');
     } catch (error: unknown) {
-        if (error instanceof Error) {
-          toast.error(error.message);
-        } else if (typeof error === 'string') {
-          toast.error(error);
-        } else {
-          toast.error('An unknown error occurred');
-        }
+      if (error instanceof Error) {
+        toast.error(error.message);
+      } else if (typeof error === 'string') {
+        toast.error(error);
+      } else {
+        toast.error('An unknown error occurred');
       }
+    }
   };
 
   const handleRoleChange = async (userId: string, role: 'Student' | 'Instructor' | 'Admin') => {
@@ -112,19 +113,19 @@ export default function AdminDashboardPage() {
       }
       toast.success('User role updated');
     } catch (error: unknown) {
-        if (error instanceof Error) {
-          toast.error(error.message || 'Failed to load dashboard');
-        } else if (typeof error === 'string') {
-          toast.error(error || 'Failed to load dashboard');
-        } else {
-          toast.error('An unknown error occurred');
-        }
+      if (error instanceof Error) {
+        toast.error(error.message || 'Failed to load dashboard');
+      } else if (typeof error === 'string') {
+        toast.error(error || 'Failed to load dashboard');
+      } else {
+        toast.error('An unknown error occurred');
       }
+    }
   };
 
   const handleApprove = async (userId: string) => {
     try {
-      await approveUser(userId);
+      await approveUser(userId); // Use approveUser API function
       setStats((prev) => prev && ({
         ...prev,
         instructorDetails: prev.instructorDetails.map((user) =>
@@ -134,14 +135,14 @@ export default function AdminDashboardPage() {
       setNotifications(notifications.filter((notif) => notif.userId !== userId));
       toast.success('User approved as instructor');
     } catch (error: unknown) {
-        if (error instanceof Error) {
-          toast.error(error.message || 'Failed to load dashboard');
-        } else if (typeof error === 'string') {
-          toast.error(error || 'Failed to load dashboard');
-        } else {
-          toast.error('An unknown error occurred');
-        }
+      if (error instanceof Error) {
+        toast.error(error.message || 'Failed to load dashboard');
+      } else if (typeof error === 'string') {
+        toast.error(error || 'Failed to load dashboard');
+      } else {
+        toast.error('An unknown error occurred');
       }
+    }
   };
 
   const handleViewProgress = async (user: { id: string; email: string }) => {
@@ -155,8 +156,29 @@ export default function AdminDashboardPage() {
       setProgress({ ...progress, [user.id]: userProgress });
       setSelectedUser(user);
       toast.success('User progress loaded');
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        toast.error(error.message);
+      } else if (typeof error === 'string') {
+        toast.error(error);
+      } else {
+        toast.error('An unknown error occurred');
+      }
     }
-    catch (error: unknown) {
+  };
+
+  const handleViewDetails = async (user: { id: string; email: string }) => {
+    if (progress[user.id]) {
+      setProgress({ ...progress, [user.id]: null });
+      setSelectedUser(null);
+      return;
+    }
+    try {
+      const userProgress = await getUserProgress(user.id);
+      setProgress({ ...progress, [user.id]: userProgress });
+      setSelectedUser(user);
+      toast.success('Student details loaded');
+    } catch (error: unknown) {
       if (error instanceof Error) {
         toast.error(error.message);
       } else if (typeof error === 'string') {
@@ -173,6 +195,13 @@ export default function AdminDashboardPage() {
         <div className="w-8 h-8 border-4 border-black border-t-transparent rounded-full animate-spin"></div>
       </div>
     );
+  }
+
+  if (!stats) {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    toast.error('Please login to access dashboard');
+    return router.push('/');
   }
 
   return (
@@ -256,8 +285,8 @@ export default function AdminDashboardPage() {
               <CardTitle>Instructors</CardTitle>
             </CardHeader>
             <CardContent>
-              {stats?.instructorDetails.length === 0 ? (
-                <p>No instructors found</p>
+              {stats?.instructorDetails.filter((user) => user.status === 'approved').length === 0 ? (
+                <p>No approved instructors found</p>
               ) : (
                 <div className="overflow-x-auto">
                   <Table>
@@ -270,7 +299,7 @@ export default function AdminDashboardPage() {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {stats?.instructorDetails.map((user) => (
+                      {stats?.instructorDetails.filter((user) => user.status === 'approved').map((user) => (
                         <TableRow key={user.id}>
                           <TableCell>{user.email}</TableCell>
                           <TableCell>{user.status}</TableCell>
@@ -315,7 +344,22 @@ export default function AdminDashboardPage() {
               <CardTitle>Students</CardTitle>
             </CardHeader>
             <CardContent>
-              {stats?.studentDetails.length === 0 ? (
+              <div className="mb-4">
+                <label htmlFor="yearFilter" className="mr-2">Filter by Year:</label>
+                <select
+                  id="yearFilter"
+                  value={filterYear}
+                  onChange={(e) => setFilterYear(e.target.value)}
+                  className="border rounded p-2"
+                >
+                  <option value="">All Years</option>
+                  <option value="1">1st Year</option>
+                  <option value="2">2nd Year</option>
+                  <option value="3">3rd Year</option>
+                  <option value="4">4th Year</option>
+                </select>
+              </div>
+              {stats?.studentDetails.filter((user) => !filterYear || user.yearOfStudy === Number(filterYear)).length === 0 ? (
                 <p>No students found</p>
               ) : (
                 <div className="overflow-x-auto">
@@ -328,7 +372,7 @@ export default function AdminDashboardPage() {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {stats?.studentDetails.map((user) => (
+                      {stats?.studentDetails.filter((user) => !filterYear || user.yearOfStudy === Number(filterYear)).map((user) => (
                         <TableRow
                           key={user.id}
                           className="cursor-pointer hover:bg-gray-50"
@@ -343,8 +387,18 @@ export default function AdminDashboardPage() {
                                 e.stopPropagation();
                                 handleDelete(user.id);
                               }}
+                              className="mr-2"
                             >
                               Delete
+                            </Button>
+                            <Button
+                              variant="grayscale"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleViewDetails(user);
+                              }}
+                            >
+                              View Details
                             </Button>
                           </TableCell>
                         </TableRow>
@@ -360,7 +414,7 @@ export default function AdminDashboardPage() {
                     {selectedUser && progress[selectedUser.id] && (
                       <DialogContent className="sm:max-w-lg">
                         <DialogHeader>
-                          <DialogTitle>Progress for {selectedUser.email}</DialogTitle>
+                          <DialogTitle>{selectedUser.email === 'Progress' ? `Progress for ${selectedUser.email}` : `Details for ${selectedUser.email}`}</DialogTitle>
                         </DialogHeader>
                         {progress[selectedUser.id]?.quizzes?.length === 0 ? (
                           <p>No quizzes completed</p>
@@ -419,17 +473,11 @@ export default function AdminDashboardPage() {
                           <TableCell>{new Date(notif.createdAt).toLocaleDateString()}</TableCell>
                           <TableCell>
                             <Button
-                              variant={'grayscale'}
+                              variant="grayscale"
                               className="mr-2"
                               onClick={() => handleApprove(notif.userId)}
                             >
                               Approve
-                            </Button>
-                            <Button
-                              variant="destructive"
-                              onClick={() => handleDelete(notif.userId)}
-                            >
-                              Delete
                             </Button>
                           </TableCell>
                         </TableRow>
