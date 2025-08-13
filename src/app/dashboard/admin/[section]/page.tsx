@@ -123,71 +123,146 @@ export default function AdminDashboardPage() {
     }
   };
 
-  const handleApprove = async (userId: string) => {
-    try {
-      await approveUser(userId); // Use approveUser API function
-      setStats((prev) => prev && ({
+  const handleApprove = async (userId: string, approval: boolean) => {
+  try {
+    await approveUser(userId, approval); // Pass true or false to backend
+
+    setStats((prev) => {
+      if (!prev) return prev;
+
+      return {
         ...prev,
-        instructorDetails: prev.instructorDetails.map((user) =>
-          user.id === userId ? { ...user, status: 'approved' } : user
-        ),
-      }));
-      setNotifications(notifications.filter((notif) => notif.userId !== userId));
+        instructorDetails: approval
+          ? // Original logic: approve instructor
+            prev.instructorDetails.map((user) =>
+              user.id === userId ? { ...user, status: 'approved' } : user
+            )
+          : // New logic: remove approval immediately from list
+            prev.instructorDetails.map((user) =>
+              user.id === userId ? { ...user, status: 'pending' } : user
+            ),
+      };
+    });
+
+    if (approval) {
+      // If approving, also remove from notifications
+      setNotifications((prev) =>
+        prev.filter((notif) => notif.userId !== userId)
+      );
       toast.success('User approved as instructor');
-    } catch (error: unknown) {
-      if (error instanceof Error) {
-        toast.error(error.message || 'Failed to load dashboard');
-      } else if (typeof error === 'string') {
-        toast.error(error || 'Failed to load dashboard');
-      } else {
-        toast.error('An unknown error occurred');
-      }
+    } else {
+      toast.error('User approval removed');
     }
-  };
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      toast.error(error.message || 'Failed to load dashboard');
+    } else if (typeof error === 'string') {
+      toast.error(error || 'Failed to load dashboard');
+    } else {
+      toast.error('An unknown error occurred');
+    }
+  }
+};
 
-  const handleViewProgress = async (user: { id: string; email: string }) => {
-    if (progress[user.id]) {
-      setProgress({ ...progress, [user.id]: null });
-      setSelectedUser(null);
-      return;
-    }
-    try {
-      const userProgress = await getUserProgress(user.id);
-      setProgress({ ...progress, [user.id]: userProgress });
-      setSelectedUser(user);
-      toast.success('User progress loaded');
-    } catch (error: unknown) {
-      if (error instanceof Error) {
-        toast.error(error.message);
-      } else if (typeof error === 'string') {
-        toast.error(error);
-      } else {
-        toast.error('An unknown error occurred');
-      }
-    }
-  };
 
-  const handleViewDetails = async (user: { id: string; email: string }) => {
-    if (progress[user.id]) {
-      setProgress({ ...progress, [user.id]: null });
-      setSelectedUser(null);
-      return;
-    }
-    try {
-      const userProgress = await getUserProgress(user.id);
-      setProgress({ ...progress, [user.id]: userProgress });
-      setSelectedUser(user);
-      toast.success('Student details loaded');
-    } catch (error: unknown) {
-      if (error instanceof Error) {
-        toast.error(error.message);
-      } else if (typeof error === 'string') {
-        toast.error(error);
-      } else {
-        toast.error('An unknown error occurred');
-      }
-    }
+  // const handleViewProgress = async (user: { id: string; email: string }) => {
+  //   if (progress[user.id]) {
+  //     setProgress({ ...progress, [user.id]: null });
+  //     setSelectedUser(null);
+  //     return;
+  //   }
+  //   try {
+  //     const userProgress = await getUserProgress(user.id);
+  //     setProgress({ ...progress, [user.id]: userProgress });
+  //     setSelectedUser(user);
+  //     toast.success('User progress loaded');
+  //   } catch (error: unknown) {
+  //     if (error instanceof Error) {
+  //       toast.error(error.message);
+  //     } else if (typeof error === 'string') {
+  //       toast.error(error);
+  //     } else {
+  //       toast.error('An unknown error occurred');
+  //     }
+  //   }
+  // };
+
+  // const handleViewDetails = async (user: { id: string; email: string }) => {
+  //   if (progress[user.id]) {
+  //     setProgress({ ...progress, [user.id]: null });
+  //     setSelectedUser(null);
+  //     return;
+  //   }
+  //   try {
+  //     const userProgress = await getUserProgress(user.id);
+  //     setProgress({ ...progress, [user.id]: userProgress });
+  //     setSelectedUser(user);
+  //     console.log(progress);
+  //     toast.success('Student details loaded');
+  //   } catch (error: unknown) {
+  //     if (error instanceof Error) {
+  //       toast.error(error.message);
+  //     } else if (typeof error === 'string') {
+  //       toast.error(error);
+  //     } else {
+  //       toast.error('An unknown error occurred');
+  //     }
+  //   }
+  // };
+
+  interface Attempt {
+  quizId: string;
+  title: string;
+  totalScore: number;
+  attemptDate: string;
+}
+
+interface UserProgressResponse {
+  student: {
+    userId: string;
+    email: string;
+    firstName: string;
+    lastName: string;
+    yearOfStudy: number;
   };
+  attempts: Attempt[];
+  averageScore: number;
+  totalQuizzesAttempted: number;
+}
+
+const handleViewDetails = async (user: { id: string; email: string }) => {
+  if (progress[user.id]) {
+    setProgress({ ...progress, [user.id]: null });
+    setSelectedUser(null);
+    return;
+  }
+  try {
+    const userProgress: UserProgressResponse = await getUserProgress(user.id);
+
+    const transformedProgress = {
+      ...userProgress,
+      quizzes: userProgress.attempts.map((a: Attempt) => ({
+        id: a.quizId,
+        title: a.title,
+        score: a.totalScore * 100,
+        completedAt: a.attemptDate
+      }))
+    };
+
+    setProgress({ ...progress, [user.id]: transformedProgress });
+    setSelectedUser(user);
+    toast.success('Student details loaded');
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      toast.error(error.message);
+    } else if (typeof error === 'string') {
+      toast.error(error);
+    } else {
+      toast.error('An unknown error occurred');
+    }
+  }
+};
+
 
   if (loading) {
     return (
@@ -294,7 +369,6 @@ export default function AdminDashboardPage() {
                       <TableRow>
                         <TableHead>Email</TableHead>
                         <TableHead>Status</TableHead>
-                        <TableHead>Role</TableHead>
                         <TableHead>Actions</TableHead>
                       </TableRow>
                     </TableHeader>
@@ -304,29 +378,11 @@ export default function AdminDashboardPage() {
                           <TableCell>{user.email}</TableCell>
                           <TableCell>{user.status}</TableCell>
                           <TableCell>
-                            <DropdownMenu>
-                              <DropdownMenuTrigger asChild>
-                                <Button variant="outline">Instructor</Button>
-                              </DropdownMenuTrigger>
-                              <DropdownMenuContent>
-                                {(['Student', 'Instructor', 'Admin'] as const).map((role) => (
-                                  <DropdownMenuItem
-                                    key={role}
-                                    onClick={() => handleRoleChange(user.id, role)}
-                                    disabled={role === 'Instructor'}
-                                  >
-                                    {role}
-                                  </DropdownMenuItem>
-                                ))}
-                              </DropdownMenuContent>
-                            </DropdownMenu>
-                          </TableCell>
-                          <TableCell>
                             <Button
                               variant="destructive"
-                              onClick={() => handleDelete(user.id)}
+                              onClick={() => handleApprove(user.id, false)}
                             >
-                              Delete
+                              Remove Approval
                             </Button>
                           </TableCell>
                         </TableRow>
@@ -375,8 +431,6 @@ export default function AdminDashboardPage() {
                       {stats?.studentDetails.filter((user) => !filterYear || user.yearOfStudy === Number(filterYear)).map((user) => (
                         <TableRow
                           key={user.id}
-                          className="cursor-pointer hover:bg-gray-50"
-                          onClick={() => handleViewProgress(user)}
                         >
                           <TableCell>{user.email}</TableCell>
                           <TableCell>{user.yearOfStudy ?? 'N/A'}</TableCell>
@@ -412,36 +466,43 @@ export default function AdminDashboardPage() {
                     }
                   }}>
                     {selectedUser && progress[selectedUser.id] && (
-                      <DialogContent className="sm:max-w-lg">
-                        <DialogHeader>
-                          <DialogTitle>{selectedUser.email === 'Progress' ? `Progress for ${selectedUser.email}` : `Details for ${selectedUser.email}`}</DialogTitle>
-                        </DialogHeader>
-                        {progress[selectedUser.id]?.quizzes?.length === 0 ? (
-                          <p>No quizzes completed</p>
-                        ) : (
-                          <Table>
-                            <TableHeader>
-                              <TableRow>
-                                <TableHead>Quiz Title</TableHead>
-                                <TableHead>Score</TableHead>
-                                <TableHead>Completed At</TableHead>
+                    <DialogContent className="sm:max-w-lg bg-white">
+                      <DialogHeader>
+                        <DialogTitle>Details for {progress[selectedUser.id]?.student.firstName} {progress[selectedUser.id]?.student.lastName}</DialogTitle>
+                      </DialogHeader>
+
+                      <div className="mb-4 space-y-1">
+                        <p><strong>Email:</strong> {progress[selectedUser.id]?.student.email}</p>
+                        <p><strong>Year of Study:</strong> {progress[selectedUser.id]?.student.yearOfStudy}</p>
+                        <p><strong>Average Score:</strong> {((progress[selectedUser.id]?.averageScore ?? 0) * 100).toFixed(2)}%</p>
+                        <p><strong>Total Quizzes Attempted:</strong> {progress[selectedUser.id]?.totalQuizzesAttempted}</p>
+                      </div>
+
+                      {progress[selectedUser.id]?.quizzes?.length === 0 ? (
+                        <p>No quizzes completed</p>
+                      ) : (
+                        <Table>
+                          <TableHeader>
+                            <TableRow>
+                              <TableHead>Quiz Title</TableHead>
+                              <TableHead>Score</TableHead>
+                              <TableHead>Completed At</TableHead>
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody>
+                            {progress[selectedUser.id]?.quizzes?.map((quiz) => (
+                              <TableRow key={quiz.id}>
+                                <TableCell>{quiz.title}</TableCell>
+                                <TableCell>{quiz.score}%</TableCell>
+                                <TableCell>{new Date(quiz.completedAt).toLocaleDateString()}</TableCell>
                               </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                              {progress[selectedUser.id]?.quizzes?.map((quiz) => (
-                                <TableRow key={quiz.id}>
-                                  <TableCell>{quiz.title}</TableCell>
-                                  <TableCell>{quiz.score}%</TableCell>
-                                  <TableCell>
-                                    {new Date(quiz.completedAt).toLocaleDateString()}
-                                  </TableCell>
-                                </TableRow>
-                              ))}
-                            </TableBody>
-                          </Table>
-                        )}
-                      </DialogContent>
-                    )}
+                            ))}
+                          </TableBody>
+                        </Table>
+                      )}
+                    </DialogContent>
+                  )}
+
                   </Dialog>
                 </div>
               )}
@@ -475,7 +536,7 @@ export default function AdminDashboardPage() {
                             <Button
                               variant="grayscale"
                               className="mr-2"
-                              onClick={() => handleApprove(notif.userId)}
+                              onClick={() => handleApprove(notif.userId, true)}
                             >
                               Approve
                             </Button>

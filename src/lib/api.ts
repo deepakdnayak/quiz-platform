@@ -153,12 +153,13 @@ export const updateUserRole = async (userId: string, role: string) => {
   }
 };
 
-export const approveUser = async (userId: string) => {
+export const approveUser = async (userId: string, approval: boolean) => {
   try {
-    const response = await api.post(`/api/admin/users/${userId}/approve`);
+    const response = await api.put(`/api/admin/users/${userId}/approve`, {
+      isApproved: approval
+    });
     return response.data;
-  }
-  catch (error: unknown) {
+  } catch (error: unknown) {
     if (error instanceof Error && 'response' in error) {
       const err = error as { response?: { data?: { error?: string } } };
       throw new Error(err.response?.data?.error || 'Failed to approve user');
@@ -166,6 +167,7 @@ export const approveUser = async (userId: string) => {
     throw new Error('Failed to approve user');
   }
 };
+
 
 export const getUserProgress = async (userId: string) => {
   try {

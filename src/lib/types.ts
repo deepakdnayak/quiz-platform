@@ -107,13 +107,29 @@ export interface AdminStatistics {
 }
 
 export interface UserProgress {
+  student: {
+    userId: string;
+    email: string;
+    firstName: string;
+    lastName: string;
+    yearOfStudy: number;
+  };
+  attempts: {
+    quizId: string;
+    title: string;
+    totalScore: number;
+    attemptDate: string;
+  }[];
+  averageScore: number; // e.g., 0.5 for 50%
+  totalQuizzesAttempted: number;
   quizzes: {
     id: string;
     title: string;
-    score: number;
+    score: number; // percentage value for UI
     completedAt: string;
   }[];
 }
+
 
 export interface Notification {
   id: string;
