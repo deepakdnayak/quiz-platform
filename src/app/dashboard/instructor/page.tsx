@@ -64,43 +64,29 @@ export default function InstructorDashboardPage() {
         console.log('Instructor Dashboard API Response:', dashboardResponse); // Debug log
         setDashboardData(dashboardResponse);
 
-        if(dashboardData?.isApproved){
+        // Fetch all quizzes
+        const quizzesResponse = await getInstructorQuizzes('all');
+        console.log('Instructor Quizzes API Response:', quizzesResponse); // Debug log
+        setQuizzes(quizzesResponse);
 
+        // Fetch statistics for each quiz
+        const statsPromises = quizzesResponse.map(async (quiz) => {
           try {
-            // Fetch all quizzes
-            const quizzesResponse = await getInstructorQuizzes('all');
-            console.log('Instructor Quizzes API Response:', quizzesResponse); // Debug log
-            setQuizzes(quizzesResponse);
-
-            // Fetch statistics for each quiz
-            const statsPromises = quizzesResponse.map(async (quiz) => {
-              try {
-                const stats = await getQuizStatistics(quiz.quizId);
-                return { quizId: quiz.quizId, stats };
-              } catch (error) {
-                console.error(`Error fetching stats for quiz ${quiz.quizId}:`, error); // Debug log
-                return { quizId: quiz.quizId, stats: null };
-              }
-            });
-            const statsResults = await Promise.all(statsPromises);
-            const statsMap = statsResults.reduce((acc, { quizId, stats }) => {
-              if (stats) acc[quizId] = stats;
-              return acc;
-            }, {} as { [key: string]: QuizStatistics });
-            setQuizStats(statsMap);
-
-            toast.success('Dashboard loaded successfully');
-        }
-        catch (error: unknown) {
-          if (error instanceof Error) {
-            toast.error(error.message || 'Failed to load dashboard');
-          } else if (typeof error === 'string') {
-            toast.error(error || 'Failed to load dashboard');
-          } else {
-            toast.error('An unknown error occurred');
+            const stats = await getQuizStatistics(quiz.quizId);
+            return { quizId: quiz.quizId, stats };
+          } catch (error) {
+            console.error(`Error fetching stats for quiz ${quiz.quizId}:`, error); // Debug log
+            return { quizId: quiz.quizId, stats: null };
           }
-        }
-      }
+        });
+        const statsResults = await Promise.all(statsPromises);
+        const statsMap = statsResults.reduce((acc, { quizId, stats }) => {
+          if (stats) acc[quizId] = stats;
+          return acc;
+        }, {} as { [key: string]: QuizStatistics });
+        setQuizStats(statsMap);
+
+        toast.success('Dashboard loaded successfully');
         
       }
       catch (error: unknown) {
