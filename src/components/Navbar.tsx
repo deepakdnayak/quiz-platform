@@ -36,11 +36,11 @@ export default function Navbar() {
         <Link href="/" className="text-2xl font-bold text-primary">
           Quiz Platform
         </Link>
-        <div className="space-x-4">
+        <div className="space-x-4 md:space-x-4">
           {user ? (
             <>
               <Link href={`/dashboard/${user.role.toLowerCase()}`}>
-                <Button variant={'grayscale'}>Dashboard</Button>
+                <Button variant={'grayscale'} className="hidden md:inline-block">Dashboard</Button>
               </Link>
               <Button variant={'outline'} className="hover:bg-gray-300 hover:text-white hover:border-1 hover:border-gray-400" onClick={handleLogout}>
                 Logout
@@ -49,10 +49,10 @@ export default function Navbar() {
           ) : (
             <>
               <Link href="/auth/login">
-                <Button variant={'grayscale'}>Login</Button>
+                <Button variant={'grayscale'} className="hidden md:inline-block">Login</Button>
               </Link>
               <Link href="/auth/register">
-                <Button variant={'outline'} className="hover:bg-gray-300 hover:text-white hover:border-1 hover:border-gray-400">Register</Button>
+                <Button variant={'outline'} className="hover:bg-gray-300 hover:text-white hover:border-1 hover:border-gray-400 hidden md:inline-block">Register</Button>
               </Link>
             </>
           )}

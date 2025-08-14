@@ -229,22 +229,22 @@ export default function StudentDashboardPage() {
   }
 
   return (
-    <div className="container mx-auto p-8">
-      <h1 className="text-3xl font-bold text-primary mb-6">Student Dashboard</h1>
+    <div className="container mx-auto p-4 sm:p-6 lg:p-8">
+      <h1 className="text-3xl font-bold text-primary mb-6 text-center sm:text-left">Student Dashboard</h1>
 
-      <div className="grid grid-cols-2 gap-6 mb-8" style={{ minHeight: '400px' }}> {/* Set minimum height for both cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
         {/* Student Details Card (Left Half) */}
         <div className="col-span-1">
-          <Card style={{ height: '100%' }}>
+          <Card className="h-full">
             <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle>Student Details</CardTitle>
               <Button variant={'grayscale'} onClick={handleEditToggle}>
                 {isEditing ? 'Cancel' : 'Edit Profile'}
               </Button>
             </CardHeader>
-            <CardContent style={{ height: 'calc(100% - 48px)' }}> {/* Adjust for header height */}
+            <CardContent className="h-[calc(100%-48px)] overflow-y-auto">
               {isEditing ? (
-                <div className="grid gap-4 h-full overflow-y-auto">
+                <div className="grid gap-4">
                   <div>
                     <Label htmlFor="firstName">First Name</Label>
                     <Input
@@ -313,7 +313,7 @@ export default function StudentDashboardPage() {
                   </div>
                 </div>
               ) : (
-                <div className="grid gap-4 h-full overflow-y-auto">
+                <div className="grid gap-4">
                   <div>
                     <span className="font-semibold">First Name: </span>
                     {isDefaultValue('firstName', profile.firstName) ? (
@@ -361,22 +361,20 @@ export default function StudentDashboardPage() {
         </div>
 
         {/* Progress Graph Card (Right Half) */}
-        <div className="col-span-1">
-          <Card style={{ height: '100%' }}>
+        <div className="col-span-1 hidden md:block">
+          <Card className="h-full">
             <CardHeader>
               <CardTitle>Progress Graph</CardTitle>
             </CardHeader>
-            <CardContent style={{ height: 'calc(100% - 48px)' }}> {/* Adjust for header height */}
-              <div className="h-full flex items-center justify-center">
-                <canvas id="progressChart" width="400" height="300"></canvas>
-              </div>
+            <CardContent className="h-[calc(100%-48px)] overflow-y-auto flex items-center justify-center">
+              <canvas id="progressChart" width="400" height="300"></canvas>
             </CardContent>
           </Card>
         </div>
       </div>
 
       {/* Quizzes Completed and Average Score */}
-      <div className="grid gap-6 md:grid-cols-2 mb-8">
+      <div className="grid gap-6 sm:grid-cols-1 md:grid-cols-2 mb-8">
         <Card>
           <CardHeader>
             <CardTitle>Quizzes Completed</CardTitle>
@@ -410,7 +408,7 @@ export default function StudentDashboardPage() {
               <p>No quizzes available</p>
             ) : (
               <div className="overflow-x-auto">
-                <Table className="table-fixed w-full">
+                <Table className="table-fixed w-full min-w-[600px]">
                   <TableHeader>
                     <TableRow>
                       <TableHead className="w-1/4">Title</TableHead>
@@ -445,7 +443,7 @@ export default function StudentDashboardPage() {
               <p>No active quizzes</p>
             ) : (
               <div className="overflow-x-auto">
-                <Table className="table-fixed w-full">
+                <Table className="table-fixed w-full min-w-[800px]">
                   <TableHeader>
                     <TableRow>
                       <TableHead className="w-1/4">Title</TableHead>
@@ -490,7 +488,7 @@ export default function StudentDashboardPage() {
             <p>No quizzes available</p>
           ) : (
             <div className="overflow-x-auto">
-              <Table className="table-fixed w-full">
+              <Table className="table-fixed w-full min-w-[800px]">
                 <TableHeader>
                   <TableRow>
                     <TableHead className="w-1/4">Title</TableHead>

@@ -48,7 +48,6 @@ export default function LoginPage() {
       localStorage.setItem('token', response.token);
       localStorage.setItem('user', JSON.stringify(response.user));
       toast.success('Logged in successfully');
-      console.log("222***********"+response.user.role)
       router.push(`/dashboard/${getUser(response.user.role)}`);
     } catch (error: unknown) {
       if (error instanceof Error) {
@@ -108,7 +107,7 @@ export default function LoginPage() {
 
   return (
     <div className="flex items-center justify-center h-[calc(100vh-70px)] bg-background">
-      <Card className="w-full max-w-md shadow-xl">
+      <Card className="w-full max-w-md shadow-xl mx-2 md:mx-auto">
         <CardHeader className="text-center space-y-1 pb-2">
           <CardTitle className="text-2xl font-bold tracking-tight">Welcome Back</CardTitle>
           <p className="text-sm text-muted-foreground">

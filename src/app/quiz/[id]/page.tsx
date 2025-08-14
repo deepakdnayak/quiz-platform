@@ -268,7 +268,7 @@ export default function AttemptQuizPage() {
 
       {/* Main Content */}
       <div className="container mx-auto pt-20 pb-8">
-        <Card className="max-w-3xl mx-auto">
+        <Card className="max-w-3xl mx-2 md:mx-auto">
           <CardHeader>
             <CardTitle className="text-2xl font-bold text-primary">{quiz.title}</CardTitle>
             <p className="text-gray-600">{quiz.description}</p>
@@ -327,7 +327,7 @@ export default function AttemptQuizPage() {
         </Card>
 
         <AlertDialog open={showConfirm} onOpenChange={setShowConfirm}>
-          <AlertDialogContent>
+          <AlertDialogContent className="bg-white">
             <AlertDialogHeader>
               <AlertDialogTitle>Confirm Submission</AlertDialogTitle>
               <AlertDialogDescription>
@@ -338,7 +338,7 @@ export default function AttemptQuizPage() {
               <AlertDialogCancel>Cancel</AlertDialogCancel>
               <AlertDialogAction
                 onClick={handleSubmit(confirmSubmission)}
-                className="bg-primary hover:bg-blue-700"
+                className="bg-blue-600 hover:bg-blue-400 text-white"
               >
                 Submit
               </AlertDialogAction>

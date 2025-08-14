@@ -72,7 +72,7 @@ export default function QuizResultsPage() {
 
   return (
     <div className="container mx-auto py-8 min-h-[calc(100vh-64px)]">
-      <Card className="max-w-3xl mx-auto">
+      <Card className="max-w-3xl mx-2 md:mx-auto">
         <CardHeader>
           <CardTitle className="text-2xl font-bold text-primary">Quiz Results</CardTitle>
           <p className="text-gray-600">

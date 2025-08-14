@@ -219,7 +219,7 @@ export default function CreateQuizPage() {
   };
 
   return (
-    <div className="min-h-[calc(100vh-64px)] bg-gray-50 flex items-center justify-center p-6">
+    <div className="min-h-[calc(100vh-64px)] bg-gray-50 flex items-center justify-center p-4 sm:p-6">
       <style>{customStyles}</style>
       <Card className="w-full max-w-4xl bg-white shadow-lg">
         <CardHeader>
@@ -282,7 +282,7 @@ export default function CreateQuizPage() {
                   />
                   {errors.yearOfStudy && <p className="text-red-500 text-sm mt-1">{errors.yearOfStudy.message}</p>}
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                   <div>
                     <Label htmlFor="startTime" className="text-lg font-medium">
                       Start Time
@@ -334,7 +334,7 @@ export default function CreateQuizPage() {
                       min: { value: 1, message: 'Duration must be at least 1 minute' },
                     })}
                     placeholder="Enter duration"
-                    className="mt-2 h-10 w-32"
+                    className="mt-2 h-10 w-32 sm:w-40"
                   />
                   {errors.duration && <p className="text-red-500 text-sm mt-1">{errors.duration.message}</p>}
                 </div>
