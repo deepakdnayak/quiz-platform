@@ -92,7 +92,7 @@ export default function Home() {
 
     if (token && storedUser) {
       const parsedUser = JSON.parse(storedUser);
-      toast.success('Welcome Back');
+      // toast.success('Welcome Back');
       router.push(`/dashboard/${parsedUser.role.toLowerCase()}`);
     }
   }, [router]);

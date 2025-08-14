@@ -81,11 +81,11 @@ export default function QuizResultsPage() {
     const fetchResults = async () => {
       try {
         const response = await getQuizResultsForInstructor(quizId);
-        console.log('Quiz Results API Response:', response); // Debug log
+        // console.log('Quiz Results API Response:', response); // Debug log
         setResults(response);
         // // Fetch quiz title (optional, could be passed from dashboard or via API)
         // setQuizTitle(`Quiz ${quizId}`); // Replace with actual quiz title if available
-        toast.success('Quiz results loaded successfully');
+        // toast.success('Quiz results loaded successfully');
       } catch (error: unknown) {
         if (error instanceof Error) {
           toast.error(error.message || 'Failed to load quiz results');

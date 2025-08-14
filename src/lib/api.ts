@@ -3,7 +3,7 @@ import { CreateQuizForm, QuizResultForInstructor,StatsResponse, InstructorDashbo
 
 
 const baseURL = process.env.NEXT_PUBLIC_NODE_ENV=="production" ? process.env.NEXT_PUBLIC_API_URL : 'http://localhost:5000'; 
-console.log('API baseURL:', baseURL); // Debug log
+// console.log('API baseURL:', baseURL); // Debug log
 
 const api = axios.create({
   baseURL,
@@ -53,7 +53,7 @@ export const login = async (data: { email: string; password: string }) => {
 export const getStudentDashboard = async () => {
   try {
     const response = await api.get('/api/students/dashboard');
-    console.log('Student Dashboard Response:', response.data); // Debug log
+    // console.log('Student Dashboard Response:', response.data); // Debug log
     return response.data;
   }
   catch (error: unknown) {
@@ -68,7 +68,7 @@ export const getStudentDashboard = async () => {
 export const getInstructorDashboard = async (): Promise<InstructorDashboard> => {
   try {
     const response = await api.get('/api/instructors/dashboard');
-    console.log('Get Instructor Dashboard Response:', response.data); // Debug log
+    // console.log('Get Instructor Dashboard Response:', response.data); // Debug log
     return response.data;
   } 
   catch (error: unknown) {
@@ -83,7 +83,7 @@ export const getInstructorDashboard = async (): Promise<InstructorDashboard> => 
 export const getInstructorQuizzes = async (status: 'all' | 'active' | 'upcoming' | 'past' = 'all'): Promise<InstructorQuiz[]> => {
   try {
     const response = await api.get('/api/instructors/quizzes', { params: { status } });
-    console.log('Get Instructor Quizzes Response:', response.data); // Debug log
+    // console.log('Get Instructor Quizzes Response:', response.data); // Debug log
     return response.data;
   }
   catch (error: unknown) {
@@ -98,7 +98,7 @@ export const getInstructorQuizzes = async (status: 'all' | 'active' | 'upcoming'
 export const getQuizStatistics = async (quizId: string): Promise<QuizStatistics> => {
   try {
     const response = await api.get(`/api/quizzes/${quizId}/statistics?refresh=true`);
-    console.log('Get Quiz Statistics Response:', response.data); // Debug log
+    // console.log('Get Quiz Statistics Response:', response.data); // Debug log
     return response.data;
   } 
   catch (error: unknown) {
@@ -113,7 +113,7 @@ export const getQuizStatistics = async (quizId: string): Promise<QuizStatistics>
 export const getAdminStatistics = async () => {
   try {
     const response = await api.get('/api/admin/statistics');
-    console.log('Admin Statistics Response:', response.data); // Debug log
+    // console.log('Admin Statistics Response:', response.data); // Debug log
     return response.data;
   } 
   catch (error: unknown) {
@@ -172,7 +172,7 @@ export const approveUser = async (userId: string, approval: boolean) => {
 export const getUserProgress = async (userId: string) => {
   try {
     const response = await api.get(`/api/admin/students/${userId}/progress`);
-    console.log('User Progress Response:', response.data); // Debug log
+    // console.log('User Progress Response:', response.data); // Debug log
     return response.data;
   }
   catch (error: unknown) {
@@ -187,7 +187,7 @@ export const getUserProgress = async (userId: string) => {
 export const getNotifications = async () => {
   try {
     const response = await api.get('/api/admin/notifications');
-    console.log('Notifications Response:', response.data); // Debug log
+    // console.log('Notifications Response:', response.data); // Debug log
     return response.data;
   } 
   catch (error: unknown) {
@@ -202,7 +202,7 @@ export const getNotifications = async () => {
 export const createQuiz = async (data: CreateQuizForm) => {
   try {
     const response = await api.post('/api/quizzes', data);
-    console.log('Create Quiz Response:', response.data); // Debug log
+    // console.log('Create Quiz Response:', response.data); // Debug log
     return response.data;
   } 
   catch (error: unknown) {
@@ -270,7 +270,7 @@ export const getQuizResults = async (quizId: string): Promise<QuizResults> => {
 export const getProfile = async (): Promise<ProfileResponse> => {
   try {
     const response = await api.get('/api/users/profile');
-    console.log('Get Profile Response:', response.data); // Debug log
+    // console.log('Get Profile Response:', response.data); // Debug log
     return response.data;
   } 
   catch (error: unknown) {
@@ -285,7 +285,7 @@ export const getProfile = async (): Promise<ProfileResponse> => {
 export const updateProfile = async (data: UpdateProfileData): Promise<{ profile: Profile }> => {
   try {
     const response = await api.put('/api/users/profile', data);
-    console.log('Update Profile Response:', response.data); // Debug log
+    // console.log('Update Profile Response:', response.data); // Debug log
     return response.data;
   } 
   catch (error: unknown) {
@@ -300,7 +300,7 @@ export const updateProfile = async (data: UpdateProfileData): Promise<{ profile:
 export const getQuizResultsForInstructor = async (quizId: string): Promise<QuizResultForInstructor[]> => {
   try {
     const response = await api.get(`/api/quizzes/${quizId}/resultsForInstructor`);
-    console.log('Get Quiz Results Response:', response.data); // Debug log
+    // console.log('Get Quiz Results Response:', response.data); // Debug log
     return response.data;
   } 
   catch (error: unknown) {
@@ -315,7 +315,7 @@ export const getQuizResultsForInstructor = async (quizId: string): Promise<QuizR
 export const getStatistics = async (): Promise<StatsResponse> => {
   try {
     const response = await api.get('/api/users/getUserCount');
-    console.log('Get Statistics Response:', response.data); // Debug log
+    // console.log('Get Statistics Response:', response.data); // Debug log
     return response.data;
   } 
   catch (error: unknown) {

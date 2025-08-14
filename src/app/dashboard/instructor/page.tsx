@@ -61,12 +61,12 @@ export default function InstructorDashboardPage() {
       try {
         // Fetch dashboard data
         const dashboardResponse = await getInstructorDashboard();
-        console.log('Instructor Dashboard API Response:', dashboardResponse); // Debug log
+        // console.log('Instructor Dashboard API Response:', dashboardResponse); // Debug log
         setDashboardData(dashboardResponse);
 
         // Fetch all quizzes
         const quizzesResponse = await getInstructorQuizzes('all');
-        console.log('Instructor Quizzes API Response:', quizzesResponse); // Debug log
+        // console.log('Instructor Quizzes API Response:', quizzesResponse); // Debug log
         setQuizzes(quizzesResponse);
 
         // Fetch statistics for each quiz
@@ -86,7 +86,7 @@ export default function InstructorDashboardPage() {
         }, {} as { [key: string]: QuizStatistics });
         setQuizStats(statsMap);
 
-        toast.success('Dashboard loaded successfully');
+        // toast.success('Dashboard loaded successfully');
         
       }
       catch (error: unknown) {

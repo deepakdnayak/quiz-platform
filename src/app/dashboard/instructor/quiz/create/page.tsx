@@ -181,7 +181,7 @@ export default function CreateQuizPage() {
   const [submitting, setSubmitting] = useState(false);
 
   const onSubmit = async (data: CreateQuizForm) => {
-    console.log('Form Data:', JSON.stringify(data, null, 2)); // Debug form data
+    // console.log('Form Data:', JSON.stringify(data, null, 2)); // Debug form data
     try {
       setSubmitting(true);
       // Validate dates

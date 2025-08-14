@@ -8,7 +8,15 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
-import Chart from 'chart.js/auto'; // Import Chart.js
+import {
+  LineChart,
+  Line,
+  CartesianGrid,
+  XAxis,
+  YAxis,
+  Tooltip,
+  ResponsiveContainer,
+} from 'recharts'; // Import Recharts components
 import { getStudentDashboard, getProfile, updateProfile } from '@/lib/api';
 import { StudentDashboard, Profile, UpdateProfileData } from '@/lib/types';
 
@@ -36,7 +44,6 @@ const formatISTDate = (isoDate: string): string => {
 
 // Utility to check if quiz end time has passed (in IST)
 const isQuizEnded = (endTime: string): boolean => {
-  console.log("End Time : " + endTime);
   const endDate = new Date(endTime);
   const currentTime = new Date();
   const istOffset = 5.5 * 60 * 60 * 1000;
@@ -57,7 +64,6 @@ export default function StudentDashboardPage() {
     rollNumber: '',
   });
   const router = useRouter();
-  let chartInstance: Chart | null = null; // To store the chart instance for cleanup
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -73,8 +79,6 @@ export default function StudentDashboardPage() {
           getStudentDashboard(),
           getProfile(),
         ]);
-        console.log('Student Dashboard API Response:', dashboardResponse);
-        console.log('Profile API Response:', profileResponse);
         setData(dashboardResponse);
         setProfile(profileResponse.profile);
         setFormData({
@@ -84,7 +88,7 @@ export default function StudentDashboardPage() {
           department: profileResponse.profile?.department || '',
           rollNumber: profileResponse.profile?.rollNumber || '',
         });
-        toast.success('Dashboard and profile loaded successfully');
+        // toast.success('Dashboard and profile loaded successfully');
       } catch (error: unknown) {
         if (error instanceof Error) {
           toast.error(error.message || 'Failed to load dashboard or profile');
@@ -100,56 +104,6 @@ export default function StudentDashboardPage() {
 
     fetchData();
   }, [router]);
-
-  useEffect(() => {
-    // Render chart when data is available
-    if (data?.completedQuizzes && data.completedQuizzes.length > 0) {
-      const ctx = (document.getElementById('progressChart') as HTMLCanvasElement | null)?.getContext('2d');
-      if (ctx && !chartInstance) {
-        const progressData = getProgressData();
-        chartInstance = new Chart(ctx, {
-          type: 'line', // Changed to line graph
-          data: {
-            labels: progressData.map(item => `(${item.title})`),
-            datasets: [{
-              label: 'Score (%)',
-              data: progressData.map(item => item.scorePercentage),
-              backgroundColor: 'rgba(54, 162, 235, 0.2)', // Filled area under line
-              borderColor: 'rgba(54, 162, 235, 1)',
-              borderWidth: 2,
-              tension: 0.1, // Smooth line
-              fill: true // Fill area under the line
-            }]
-          },
-          options: {
-            scales: {
-              y: {
-                beginAtZero: true,
-                max: 100,
-                title: {
-                  display: true,
-                  text: 'Score (%)'
-                }
-              },
-              x: {
-                title: {
-                  display: true,
-                  text: 'Date (Quiz Title)'
-                }
-              }
-            }
-          }
-        });
-      }
-    }
-    // Cleanup chart on unmount or data change
-    return () => {
-      if (chartInstance) {
-        chartInstance.destroy();
-        chartInstance = null;
-      }
-    };
-  }, [data]);
 
   const handleEditToggle = () => {
     setIsEditing(!isEditing);
@@ -366,8 +320,22 @@ export default function StudentDashboardPage() {
             <CardHeader>
               <CardTitle>Progress Graph</CardTitle>
             </CardHeader>
-            <CardContent className="h-[calc(100%-48px)] overflow-y-auto flex items-center justify-center">
-              <canvas id="progressChart" width="400" height="300"></canvas>
+            <CardContent className="h-[calc(100%-48px)] flex items-center justify-center">
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={getProgressData()} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="title" />
+                  <YAxis domain={[0, 100]} />
+                  <Tooltip />
+                  <Line
+                    type="monotone"
+                    dataKey="scorePercentage"
+                    stroke="#8884d8"
+                    activeDot={{ r: 8 }}
+                    strokeWidth={2}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
             </CardContent>
           </Card>
         </div>
@@ -391,7 +359,7 @@ export default function StudentDashboardPage() {
           </CardHeader>
           <CardContent>
             <p className="text-2xl font-semibold">
-              {data.averageScore ? `${data.averageScore}` : '0'}
+              {data.averageScore ? `${(data.averageScore * 100).toFixed(2)}%` : '0'}
             </p>
           </CardContent>
         </Card>

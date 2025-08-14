@@ -17,7 +17,7 @@ export default function QuizResultsPage() {
 
   useEffect(() => {
     const token = localStorage.getItem('token');
-    console.log('Token:', token ? 'Present' : 'Missing'); // Debug log
+    // console.log('Token:', token ? 'Present' : 'Missing'); // Debug log
     if (!token) {
       toast.error('Please log in to view results');
       router.push('/auth/login');
@@ -27,7 +27,7 @@ export default function QuizResultsPage() {
     const fetchResults = async () => {
       try {
         const response = await getQuizResults(id as string);
-        console.log('Quiz Results API Response:', response); // Debug log
+        // console.log('Quiz Results API Response:', response); // Debug log
         setResults(response);
       } 
       catch (error: unknown) {

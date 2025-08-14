@@ -42,7 +42,7 @@ export default function AdminDashboardPage() {
         ]);
         setStats(statsResponse);
         setNotifications(notificationsResponse);
-        toast.success('Dashboard loaded successfully');
+        // toast.success('Dashboard loaded successfully');
       } catch (error: unknown) {
         if (error instanceof Error) {
           toast.error(error.message);
@@ -199,7 +199,7 @@ const handleViewDetails = async (user: { id: string; email: string }) => {
 
     setProgress({ ...progress, [user.id]: transformedProgress });
     setSelectedUser(user);
-    toast.success('Student details loaded');
+    // toast.success('Student details loaded');
   } catch (error: unknown) {
     if (error instanceof Error) {
       toast.error(error.message);
