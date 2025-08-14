@@ -32,6 +32,14 @@ export default function LoginPage() {
     }
   }, [router]);
 
+  const getUser = (role: string) => {
+    switch(role) {
+      case "Student": return "student";
+      case "Instructor": return "instructor";
+      case "Admin": return "admin";
+    }
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
@@ -40,7 +48,8 @@ export default function LoginPage() {
       localStorage.setItem('token', response.token);
       localStorage.setItem('user', JSON.stringify(response.user));
       toast.success('Logged in successfully');
-      router.push('/');
+      console.log("222***********"+response.user.role)
+      router.push(`/dashboard/${getUser(response.user.role)}`);
     } catch (error: unknown) {
       if (error instanceof Error) {
         toast.error(error.message);

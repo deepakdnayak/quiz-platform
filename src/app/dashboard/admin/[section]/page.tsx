@@ -6,12 +6,6 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import {
   Dialog,
   DialogContent,
   DialogHeader,
@@ -90,38 +84,38 @@ export default function AdminDashboardPage() {
     }
   };
 
-  const handleRoleChange = async (userId: string, role: 'Student' | 'Instructor' | 'Admin') => {
-    try {
-      await updateUserRole(userId, role);
-      setStats((prev) => prev && ({
-        ...prev,
-        studentDetails: prev.studentDetails.map((user) =>
-          user.id === userId && role !== 'Student' ? null : user
-        ).filter((user): user is NonNullable<typeof user> => !!user),
-        instructorDetails: prev.instructorDetails.map((user) =>
-          user.id === userId && role !== 'Instructor' ? null : user
-        ).filter((user): user is NonNullable<typeof user> => !!user),
-        studentCount: prev.studentDetails.some((user) => user.id === userId) && role !== 'Student' ? prev.studentCount - 1 : prev.studentCount,
-        instructorCount: prev.instructorDetails.some((user) => user.id === userId) && role !== 'Instructor' ? prev.instructorCount - 1 : prev.instructorCount,
-      }));
-      if (role === 'Instructor') {
-        setStats((prev) => prev && ({
-          ...prev,
-          instructorDetails: [...prev.instructorDetails, { id: userId, email: prev.studentDetails.find((u) => u.id === userId)?.email || '', status: 'pending' }],
-          instructorCount: prev.instructorCount + 1,
-        }));
-      }
-      toast.success('User role updated');
-    } catch (error: unknown) {
-      if (error instanceof Error) {
-        toast.error(error.message || 'Failed to load dashboard');
-      } else if (typeof error === 'string') {
-        toast.error(error || 'Failed to load dashboard');
-      } else {
-        toast.error('An unknown error occurred');
-      }
-    }
-  };
+  // const handleRoleChange = async (userId: string, role: 'Student' | 'Instructor' | 'Admin') => {
+  //   try {
+  //     await updateUserRole(userId, role);
+  //     setStats((prev) => prev && ({
+  //       ...prev,
+  //       studentDetails: prev.studentDetails.map((user) =>
+  //         user.id === userId && role !== 'Student' ? null : user
+  //       ).filter((user): user is NonNullable<typeof user> => !!user),
+  //       instructorDetails: prev.instructorDetails.map((user) =>
+  //         user.id === userId && role !== 'Instructor' ? null : user
+  //       ).filter((user): user is NonNullable<typeof user> => !!user),
+  //       studentCount: prev.studentDetails.some((user) => user.id === userId) && role !== 'Student' ? prev.studentCount - 1 : prev.studentCount,
+  //       instructorCount: prev.instructorDetails.some((user) => user.id === userId) && role !== 'Instructor' ? prev.instructorCount - 1 : prev.instructorCount,
+  //     }));
+  //     if (role === 'Instructor') {
+  //       setStats((prev) => prev && ({
+  //         ...prev,
+  //         instructorDetails: [...prev.instructorDetails, { id: userId, email: prev.studentDetails.find((u) => u.id === userId)?.email || '', status: 'pending' }],
+  //         instructorCount: prev.instructorCount + 1,
+  //       }));
+  //     }
+  //     toast.success('User role updated');
+  //   } catch (error: unknown) {
+  //     if (error instanceof Error) {
+  //       toast.error(error.message || 'Failed to load dashboard');
+  //     } else if (typeof error === 'string') {
+  //       toast.error(error || 'Failed to load dashboard');
+  //     } else {
+  //       toast.error('An unknown error occurred');
+  //     }
+  //   }
+  // };
 
   const handleApprove = async (userId: string, approval: boolean) => {
   try {
@@ -163,52 +157,6 @@ export default function AdminDashboardPage() {
     }
   }
 };
-
-
-  // const handleViewProgress = async (user: { id: string; email: string }) => {
-  //   if (progress[user.id]) {
-  //     setProgress({ ...progress, [user.id]: null });
-  //     setSelectedUser(null);
-  //     return;
-  //   }
-  //   try {
-  //     const userProgress = await getUserProgress(user.id);
-  //     setProgress({ ...progress, [user.id]: userProgress });
-  //     setSelectedUser(user);
-  //     toast.success('User progress loaded');
-  //   } catch (error: unknown) {
-  //     if (error instanceof Error) {
-  //       toast.error(error.message);
-  //     } else if (typeof error === 'string') {
-  //       toast.error(error);
-  //     } else {
-  //       toast.error('An unknown error occurred');
-  //     }
-  //   }
-  // };
-
-  // const handleViewDetails = async (user: { id: string; email: string }) => {
-  //   if (progress[user.id]) {
-  //     setProgress({ ...progress, [user.id]: null });
-  //     setSelectedUser(null);
-  //     return;
-  //   }
-  //   try {
-  //     const userProgress = await getUserProgress(user.id);
-  //     setProgress({ ...progress, [user.id]: userProgress });
-  //     setSelectedUser(user);
-  //     console.log(progress);
-  //     toast.success('Student details loaded');
-  //   } catch (error: unknown) {
-  //     if (error instanceof Error) {
-  //       toast.error(error.message);
-  //     } else if (typeof error === 'string') {
-  //       toast.error(error);
-  //     } else {
-  //       toast.error('An unknown error occurred');
-  //     }
-  //   }
-  // };
 
   interface Attempt {
   quizId: string;
