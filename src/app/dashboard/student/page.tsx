@@ -54,6 +54,7 @@ const isQuizEnded = (endTime: string): boolean => {
 export default function StudentDashboardPage() {
   const [data, setData] = useState<StudentDashboard | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
+  const [isProfileComplete, setIsProfileComplete] = useState<boolean>(false);
   const [loading, setLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState<UpdateProfileData>({
@@ -88,6 +89,10 @@ export default function StudentDashboardPage() {
           department: profileResponse.profile?.department || '',
           rollNumber: profileResponse.profile?.rollNumber || '',
         });
+        
+        setIsProfileComplete(!(isDefaultValue('firstName', profileResponse.profile?.firstName || '') || isDefaultValue('lastName', profileResponse.profile?.lastName || '') || isDefaultValue('yearOfStudy', profileResponse.profile?.yearOfStudy || '') || isDefaultValue('department', profileResponse.profile?.department || '') || isDefaultValue('rollNumber', profileResponse.profile?.rollNumber || '')));
+          
+        console.log(isProfileComplete);
         // toast.success('Dashboard and profile loaded successfully');
       } catch (error: unknown) {
         if (error instanceof Error) {
@@ -121,6 +126,15 @@ export default function StudentDashboardPage() {
       setIsEditing(false);
       localStorage.setItem('profile', JSON.stringify(response.profile));
       window.dispatchEvent(new Event('storageChange')); // Notify Navbar
+      setIsProfileComplete(
+      !(
+        isDefaultValue('firstName', response.profile.firstName) ||
+        isDefaultValue('lastName', response.profile.lastName) ||
+        isDefaultValue('yearOfStudy', response.profile.yearOfStudy) ||
+        isDefaultValue('department', response.profile.department) ||
+        isDefaultValue('rollNumber', response.profile.rollNumber)
+      )
+    );
       toast.success('Profile updated successfully');
     } catch (error: unknown) {
       if (error instanceof Error) {
@@ -141,11 +155,11 @@ export default function StudentDashboardPage() {
       case 'lastName':
         return value === 'LastName';
       case 'department':
-        return value === 'General';
+        return value === 'CEC';
       case 'yearOfStudy':
         return value === '1';
       case 'rollNumber':
-        return value?.startsWith('RN') ?? false;
+        return value=== '4CB...';
       default:
         return false;
     }
@@ -271,7 +285,7 @@ export default function StudentDashboardPage() {
                   <div>
                     <span className="font-semibold">First Name: </span>
                     {isDefaultValue('firstName', profile.firstName) ? (
-                      <span className="text-red-500">Please complete your profile</span>
+                      <span className="text-red-500">Please add first name</span>
                     ) : (
                       profile.firstName
                     )}
@@ -279,7 +293,7 @@ export default function StudentDashboardPage() {
                   <div>
                     <span className="font-semibold">Last Name: </span>
                     {isDefaultValue('lastName', profile.lastName) ? (
-                      <span className="text-red-500">Please complete your profile</span>
+                      <span className="text-red-500">Please add last name</span>
                     ) : (
                       profile.lastName
                     )}
@@ -287,7 +301,7 @@ export default function StudentDashboardPage() {
                   <div>
                     <span className="font-semibold">Year of Study: </span>
                     {isDefaultValue('yearOfStudy', profile.yearOfStudy) ? (
-                      <span className="text-red-500">Please complete your profile</span>
+                      <span className="text-red-500">Please add year of study</span>
                     ) : (
                       profile.yearOfStudy || 'N/A'
                     )}
@@ -295,15 +309,15 @@ export default function StudentDashboardPage() {
                   <div>
                     <span className="font-semibold">Department: </span>
                     {isDefaultValue('department', profile.department) ? (
-                      <span className="text-red-500">Please complete your profile</span>
+                      <span className="text-red-500">Please add department of study</span>
                     ) : (
                       profile.department
                     )}
                   </div>
                   <div>
-                    <span className="font-semibold">Roll Number: </span>
+                    <span className="font-semibold">USN: </span>
                     {isDefaultValue('rollNumber', profile.rollNumber) ? (
-                      <span className="text-red-500">Please complete your profile</span>
+                      <span className="text-red-500">Please add usn</span>
                     ) : (
                       profile.rollNumber || 'N/A'
                     )}
@@ -341,7 +355,19 @@ export default function StudentDashboardPage() {
         </div>
       </div>
 
+      {/* No Profile Box */}
+      {!isProfileComplete && (
+      <div className="mb-8 text-center">
+        <Card>
+          <CardHeader>
+            <CardTitle className="animate-pulse text-red-500">Please Update Profile to attempt quizes{isProfileComplete}</CardTitle>
+          </CardHeader>
+        </Card>
+      </div>
+      )}
+
       {/* Quizzes Completed and Average Score */}
+      {isProfileComplete && (
       <div className="grid gap-6 sm:grid-cols-1 md:grid-cols-2 mb-8">
         <Card>
           <CardHeader>
@@ -364,8 +390,10 @@ export default function StudentDashboardPage() {
           </CardContent>
         </Card>
       </div>
+      )}
 
       {/* Upcoming Quizzes */}
+      {isProfileComplete && (
       <div className="mb-8">
         <Card>
           <CardHeader>
@@ -399,8 +427,10 @@ export default function StudentDashboardPage() {
           </CardContent>
         </Card>
       </div>
+      )}
 
       {/* Active Quizzes */}
+      {isProfileComplete && (
       <div className="mb-8">
         <Card>
           <CardHeader>
@@ -445,8 +475,10 @@ export default function StudentDashboardPage() {
           </CardContent>
         </Card>
       </div>
+      )}
 
       {/* Completed Quizzes */}
+      {isProfileComplete && (
       <Card>
         <CardHeader>
           <CardTitle>Completed Quizzes</CardTitle>
@@ -492,6 +524,8 @@ export default function StudentDashboardPage() {
           )}
         </CardContent>
       </Card>
+      )}
+
     </div>
   );
 }

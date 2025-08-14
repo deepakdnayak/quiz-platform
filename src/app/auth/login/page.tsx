@@ -9,6 +9,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { toast } from 'sonner';
 import { login, sendResetOTP, verifyResetOTP, resetPassword } from '@/lib/api';
+import { GoogleOAuthProvider, GoogleLogin } from '@react-oauth/google'; // Import Google OAuth components
+import { jwtDecode } from 'jwt-decode'; // To decode the Google ID token
 
 export default function LoginPage() {
   const router = useRouter();
@@ -33,12 +35,15 @@ export default function LoginPage() {
   }, [router]);
 
   const getUser = (role: string) => {
-    switch(role) {
-      case "Student": return "student";
-      case "Instructor": return "instructor";
-      case "Admin": return "admin";
+    switch (role) {
+      case 'Student':
+        return 'student';
+      case 'Instructor':
+        return 'instructor';
+      case 'Admin':
+        return 'admin';
     }
-  }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -105,6 +110,35 @@ export default function LoginPage() {
     }
   };
 
+  // Handle Google login success
+  const handleGoogleSuccess = async (credentialResponse: any) => {
+    setIsLoading(true);
+    try {
+      const decoded: any = jwtDecode(credentialResponse.credential);
+      const { email, name, sub: googleId } = decoded;
+
+      // Simulate a login API call (replace with your actual backend integration)
+      const response = await login({ email, password: googleId }); // Adjust based on your backend
+      localStorage.setItem('token', response.token);
+      localStorage.setItem('user', JSON.stringify(response.user));
+      toast.success('Logged in with Google successfully');
+      router.push(`/dashboard/${getUser(response.user.role)}`);
+    } catch (error: unknown) {
+      toast.error((error as Error)?.message || 'Failed to log in with Google');
+      toast.error("User not found!! Please register before login");
+      router.push(`/dashboard/register`);
+    }
+    finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Handle Google login failure
+  const handleGoogleFailure = (error: any) => {
+    toast.error('Google login failed. Please try again.');
+    console.error(error);
+  };
+
   return (
     <div className="flex items-center justify-center h-[calc(100vh-70px)] bg-background">
       <Card className="w-full max-w-md shadow-xl mx-2 md:mx-auto">
@@ -137,6 +171,19 @@ export default function LoginPage() {
             <Button type="submit" className="w-full" variant="grayscale" disabled={isLoading}>
               {isLoading ? 'Logging in...' : 'Login'}
             </Button>
+            {/* Google Login Button */}
+            <GoogleOAuthProvider clientId={process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || ''}>
+              <GoogleLogin
+                onSuccess={handleGoogleSuccess}
+                onError={()=> handleGoogleFailure}
+                useOneTap={true} // Optional: Enables Google One Tap
+                shape="rectangular"
+                size="large"
+                text="signin_with"
+                theme="filled_blue"
+                width="100%"
+              />
+            </GoogleOAuthProvider>
           </form>
           <p className="text-center text-sm mt-4">
             Don’t have an account?{' '}
