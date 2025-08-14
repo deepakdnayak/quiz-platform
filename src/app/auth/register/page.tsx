@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { GoogleOAuthProvider, GoogleLogin } from '@react-oauth/google'; // Import Google OAuth components
+import { GoogleOAuthProvider, GoogleLogin, CredentialResponse } from '@react-oauth/google'; // Import Google OAuth components
 import { jwtDecode } from 'jwt-decode'; // To decode the Google ID tokenimport { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from 'sonner';
 import { register, login } from '@/lib/api';
@@ -73,12 +73,22 @@ export default function RegisterPage() {
     }
   };
 
+  interface DecodedGoogleJWT {
+    email: string;
+    name: string;
+    sub: string; // Google ID
+  }
+
   // Handle Google login success
-  const handleGoogleSuccess = async (credentialResponse: any) => {
+  const handleGoogleSuccess = async (credentialResponse: CredentialResponse): Promise<void> => {
+    if (!credentialResponse.credential) {
+      toast.error('Google login failed: No credentials received');
+      return;
+    }
     setIsLoading(true);
     try {
-      const decoded: any = jwtDecode(credentialResponse.credential);
-      const { email, name, sub: googleId } = decoded;
+      const decoded: any = jwtDecode<DecodedGoogleJWT>(credentialResponse.credential);
+      const { email, sub: googleId } = decoded;
 
       // Simulate a login API call (replace with your actual backend integration)
       console.log(email,googleId);
