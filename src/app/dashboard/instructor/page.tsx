@@ -123,7 +123,7 @@ export default function InstructorDashboardPage() {
 
   return (
     <div className="container mx-auto p-8">
-      <h1 className="text-3xl font-bold text-primary mb-6">Instructor Dashboard</h1>
+      <h1 className="text-3xl font-bold text-primary mb-6">Instructor Dashboard for {dashboardData.email}</h1>
 
       {/* Summary Cards */}
       <div className="grid gap-6 md:grid-cols-3 mb-8">

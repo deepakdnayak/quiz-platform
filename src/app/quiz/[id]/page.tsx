@@ -20,22 +20,12 @@ export default function AttemptQuizPage() {
   const [submitting, setSubmitting] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const [violationCount, setViolationCount] = useState(0);
+  const [timeLeft, setTimeLeft] = useState<number | null>(null);
   const { control, handleSubmit, formState: { errors }, setValue } = useForm<QuizAttempt>({
     defaultValues: {
       answers: [],
     },
   });
-
-  // // Enter full-screen mode
-  // const enterFullscreen = useCallback(() => {
-  //   const elem = document.documentElement;
-  //   if (elem.requestFullscreen) {
-  //     elem.requestFullscreen().catch((err) => {
-  //       console.error('Fullscreen failed:', err);
-  //       toast.error('Fullscreen mode could not be enabled. Please enable it manually.');
-  //     });
-  //   }
-  // }, []);
 
   // Block right-click, selection, and developer tools
   useEffect(() => {
@@ -56,11 +46,9 @@ export default function AttemptQuizPage() {
     document.addEventListener('selectstart', handleSelectStart);
     document.addEventListener('keydown', handleKeyDown);
 
-    // Apply CSS to disable selection
     document.body.style.userSelect = 'none';
     document.body.style.webkitUserSelect = 'none';
 
-    // Clean up event listeners
     return () => {
       document.removeEventListener('contextmenu', handleContextMenu);
       document.removeEventListener('selectstart', handleSelectStart);
@@ -92,8 +80,7 @@ export default function AttemptQuizPage() {
         await submitQuizAttempt(id as string, formData);
         toast.success('Quiz submitted due to violation');
         router.push('/dashboard/student');
-      } 
-      catch (error: unknown) {
+      } catch (error: unknown) {
         if (error instanceof Error) {
           toast.error(error.message || 'Failed to submit quiz automatically');
         } else if (typeof error === 'string') {
@@ -118,7 +105,7 @@ export default function AttemptQuizPage() {
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
       if (violationCount === 0) {
         e.preventDefault();
-        e.returnValue = ''; // Required for Chrome
+        e.returnValue = '';
         handleViolation();
       } else if (violationCount === 1) {
         e.preventDefault();
@@ -129,7 +116,6 @@ export default function AttemptQuizPage() {
     document.addEventListener('visibilitychange', handleVisibilityChange);
     window.addEventListener('beforeunload', handleBeforeUnload);
 
-    // Clean up event listeners
     return () => {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
       window.removeEventListener('beforeunload', handleBeforeUnload);
@@ -170,9 +156,9 @@ export default function AttemptQuizPage() {
           questionId: q.questionId,
           selectedOptionIds: [],
         })));
-        //enterFullscreen(); // Enter full-screen mode after quiz loads
-      } 
-      catch (error: unknown) {
+        // Start timer based on quiz.duration
+        setTimeLeft(response.duration * 60); // Convert minutes to seconds
+      } catch (error: unknown) {
         let errorMessage = 'Failed to load quiz';
 
         if (typeof error === 'object' && error !== null) {
@@ -197,15 +183,30 @@ export default function AttemptQuizPage() {
 
         toast.error(errorMessage);
         router.push('/dashboard/student');
-      }
-
-      finally {
+      } finally {
         setLoading(false);
       }
     };
 
     fetchQuiz();
   }, [id, router, setValue]);
+
+  useEffect(() => {
+    let timer: NodeJS.Timeout;
+    if (timeLeft !== null && timeLeft > 0) {
+      timer = setInterval(() => {
+        setTimeLeft((prev) => {
+          if (prev! <= 1) {
+            clearInterval(timer);
+            submitQuizAutomatically();
+            return 0;
+          }
+          return prev! - 1;
+        });
+      }, 1000);
+    }
+    return () => clearInterval(timer);
+  }, [timeLeft]);
 
   const onSubmit = async (data: QuizAttempt) => {
     if (!quiz || data.answers.length !== quiz.questions.length) {
@@ -227,17 +228,15 @@ export default function AttemptQuizPage() {
       await submitQuizAttempt(id as string, data);
       toast.success('Quiz submitted successfully');
       router.push(`/quiz/${id}/results`);
-    } 
-    catch (error: unknown) {
-        if (error instanceof Error) {
-          toast.error(error.message || 'Failed to submit quiz');
-        } else if (typeof error === 'string') {
-          toast.error(error || 'Failed to submit quiz');
-        } else {
-          toast.error('An unknown error occurred');
-        }
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        toast.error(error.message || 'Failed to submit quiz');
+      } else if (typeof error === 'string') {
+        toast.error(error || 'Failed to submit quiz');
+      } else {
+        toast.error('An unknown error occurred');
       }
-    finally {
+    } finally {
       setSubmitting(false);
       setShowConfirm(false);
     }
@@ -256,84 +255,97 @@ export default function AttemptQuizPage() {
   }
 
   return (
-    <div className="container mx-auto py-8 min-h-[calc(100vh-64px)]">
-      <Card className="max-w-3xl mx-auto">
-        <CardHeader>
-          <CardTitle className="text-2xl font-bold text-primary">{quiz.title}</CardTitle>
-          <p className="text-gray-600">{quiz.description}</p>
-          <p className="text-sm text-gray-500">
-            Duration: {quiz.duration} minutes | Questions: {quiz.questions.length}
+    <div className="min-h-[calc(100vh-64px)]">
+      {/* Header with Timer */}
+      <header className="w-full bg-white p-4 shadow-md flex justify-between items-center fixed top-0 z-10 py-6">
+        <div className="text-2xl font-bold text-blue-600">Quiz Time</div>
+        <div className="text-right">
+          <p className="text-lg font-semibold">
+            Time Left: {timeLeft !== null ? `${Math.floor(timeLeft / 3600).toString().padStart(2, '0')}:${Math.floor((timeLeft % 3600) / 60).toString().padStart(2, '0')}:${(timeLeft % 60).toString().padStart(2, '0')}` : 'Loading...'}
           </p>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-            {quiz.questions.map((question, qIndex) => (
-              <Card key={question.questionId} className="p-4">
-                <h3 className="text-lg font-semibold mb-2">
-                  {qIndex + 1}. {question.text}
-                </h3>
-                <Controller
-                  name={`answers.${qIndex}.selectedOptionIds`}
-                  control={control}
-                  rules={{ validate: (value) => value.length > 0 || 'Please select at least one option' }}
-                  render={({ field }) => (
-                    <div className="space-y-2">
-                      {question.options.map((option) => (
-                        <div key={option.optionId} className="flex items-center space-x-2">
-                          <Checkbox
-                            id={option.optionId}
-                            checked={field.value.includes(option.optionId)}
-                            onCheckedChange={(checked) => {
-                              const optionId = option.optionId;
-                              const newValue = checked
-                                ? [...field.value, optionId]
-                                : field.value.filter((id: string) => id !== optionId);
-                              field.onChange(newValue);
-                            }}
-                          />
-                          <Label htmlFor={option.optionId}>{option.text}</Label>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                />
-                {errors.answers?.[qIndex]?.selectedOptionIds && (
-                  <p className="text-red-500 text-sm">{errors.answers[qIndex].selectedOptionIds.message}</p>
-                )}
-              </Card>
-            ))}
-            <div className="flex justify-end">
-              <Button
-                type="submit"
-                variant="grayscale"
-                disabled={submitting}
-              >
-                {submitting ? 'Submitting...' : 'Submit Quiz'}
-              </Button>
-            </div>
-          </form>
-        </CardContent>
-      </Card>
+        </div>
+      </header>
 
-      <AlertDialog open={showConfirm} onOpenChange={setShowConfirm}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Confirm Submission</AlertDialogTitle>
-            <AlertDialogDescription>
-              Are you sure you want to submit your quiz? You cannot change your answers after submission.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleSubmit(confirmSubmission)}
-              className="bg-primary hover:bg-blue-700"
-            >
-              Submit
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      {/* Main Content */}
+      <div className="container mx-auto pt-20 pb-8">
+        <Card className="max-w-3xl mx-auto">
+          <CardHeader>
+            <CardTitle className="text-2xl font-bold text-primary">{quiz.title}</CardTitle>
+            <p className="text-gray-600">{quiz.description}</p>
+            <p className="text-sm text-gray-500">
+              Duration: {quiz.duration} minutes | Questions: {quiz.questions.length}
+            </p>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+              {quiz.questions.map((question, qIndex) => (
+                <Card key={question.questionId} className="p-4">
+                  <h3 className="text-lg font-semibold mb-2">
+                    {qIndex + 1}. {question.text}
+                  </h3>
+                  <Controller
+                    name={`answers.${qIndex}.selectedOptionIds`}
+                    control={control}
+                    rules={{ validate: (value) => value.length > 0 || 'Please select at least one option' }}
+                    render={({ field }) => (
+                      <div className="space-y-2">
+                        {question.options.map((option) => (
+                          <div key={option.optionId} className="flex items-center space-x-2">
+                            <Checkbox
+                              id={option.optionId}
+                              checked={field.value.includes(option.optionId)}
+                              onCheckedChange={(checked) => {
+                                const optionId = option.optionId;
+                                const newValue = checked
+                                  ? [...field.value, optionId]
+                                  : field.value.filter((id: string) => id !== optionId);
+                                field.onChange(newValue);
+                              }}
+                            />
+                            <Label htmlFor={option.optionId}>{option.text}</Label>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  />
+                  {errors.answers?.[qIndex]?.selectedOptionIds && (
+                    <p className="text-red-500 text-sm">{errors.answers[qIndex].selectedOptionIds.message}</p>
+                  )}
+                </Card>
+              ))}
+              <div className="flex justify-end">
+                <Button
+                  type="submit"
+                  variant="grayscale"
+                  disabled={submitting}
+                >
+                  {submitting ? 'Submitting...' : 'Submit Quiz'}
+                </Button>
+              </div>
+            </form>
+          </CardContent>
+        </Card>
+
+        <AlertDialog open={showConfirm} onOpenChange={setShowConfirm}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Confirm Submission</AlertDialogTitle>
+              <AlertDialogDescription>
+                Are you sure you want to submit your quiz? You cannot change your answers after submission.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={handleSubmit(confirmSubmission)}
+                className="bg-primary hover:bg-blue-700"
+              >
+                Submit
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      </div>
     </div>
   );
 }

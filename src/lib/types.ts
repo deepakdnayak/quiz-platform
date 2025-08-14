@@ -63,6 +63,7 @@ export interface InstructorDashboard {
   averageAttemptsPerQuiz: number;
   averageScoreAcrossQuizzes: number;
   isApproved: boolean;
+  email: string;
 }
 
 export interface InstructorQuiz {
