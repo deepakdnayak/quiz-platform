@@ -21,6 +21,7 @@ export interface QuizforStudentDashboardCompleted {
   totalScore: number;
   attemptDate:string;
   endTime: string;
+  fullMarks: number;
 }
 
 export interface QuizforStudentDashboardUpcoming {

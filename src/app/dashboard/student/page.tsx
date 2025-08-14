@@ -8,15 +8,14 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
+import Chart from 'chart.js/auto'; // Import Chart.js
 import { getStudentDashboard, getProfile, updateProfile } from '@/lib/api';
 import { StudentDashboard, Profile, UpdateProfileData } from '@/lib/types';
-
 
 // Utility to format ISO date to 12-hour IST format (e.g., "2:30 PM, Aug 06, 2025")
 const formatISTDate = (isoDate: string): string => {
   try {
     const date = new Date(isoDate);
-    // Convert to IST (UTC+5:30)
     const istOffset = 5.5 * 60 * 60 * 1000; // 5 hours 30 minutes in milliseconds
     const istDate = new Date(date.getTime() + istOffset);
     
@@ -27,7 +26,7 @@ const formatISTDate = (isoDate: string): string => {
       day: '2-digit',
       month: 'short',
       year: 'numeric',
-      timeZone: 'UTC', // Base on UTC and adjust manually with offset
+      timeZone: 'UTC',
     };
     return istDate.toLocaleString('en-IN', options).replace(',', '');
   } catch {
@@ -37,11 +36,10 @@ const formatISTDate = (isoDate: string): string => {
 
 // Utility to check if quiz end time has passed (in IST)
 const isQuizEnded = (endTime: string): boolean => {
-  console.log("Ent Time : "+endTime);
+  console.log("End Time : " + endTime);
   const endDate = new Date(endTime);
   const currentTime = new Date();
-  // Convert current time to IST (UTC+5:30)
-  const istOffset = 5.5 * 60 * 60 * 1000; // 5 hours 30 minutes in milliseconds
+  const istOffset = 5.5 * 60 * 60 * 1000;
   const istTime = new Date(currentTime.getTime() + istOffset);
   return istTime > endDate;
 };
@@ -59,6 +57,7 @@ export default function StudentDashboardPage() {
     rollNumber: '',
   });
   const router = useRouter();
+  let chartInstance: Chart | null = null; // To store the chart instance for cleanup
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -74,8 +73,8 @@ export default function StudentDashboardPage() {
           getStudentDashboard(),
           getProfile(),
         ]);
-        console.log('Student Dashboard API Response:', dashboardResponse); // Debug log
-        console.log('Profile API Response:', profileResponse); // Debug log
+        console.log('Student Dashboard API Response:', dashboardResponse);
+        console.log('Profile API Response:', profileResponse);
         setData(dashboardResponse);
         setProfile(profileResponse.profile);
         setFormData({
@@ -102,6 +101,56 @@ export default function StudentDashboardPage() {
     fetchData();
   }, [router]);
 
+  useEffect(() => {
+    // Render chart when data is available
+    if (data?.completedQuizzes && data.completedQuizzes.length > 0) {
+      const ctx = (document.getElementById('progressChart') as HTMLCanvasElement | null)?.getContext('2d');
+      if (ctx && !chartInstance) {
+        const progressData = getProgressData();
+        chartInstance = new Chart(ctx, {
+          type: 'line', // Changed to line graph
+          data: {
+            labels: progressData.map(item => `(${item.title})`),
+            datasets: [{
+              label: 'Score (%)',
+              data: progressData.map(item => item.scorePercentage),
+              backgroundColor: 'rgba(54, 162, 235, 0.2)', // Filled area under line
+              borderColor: 'rgba(54, 162, 235, 1)',
+              borderWidth: 2,
+              tension: 0.1, // Smooth line
+              fill: true // Fill area under the line
+            }]
+          },
+          options: {
+            scales: {
+              y: {
+                beginAtZero: true,
+                max: 100,
+                title: {
+                  display: true,
+                  text: 'Score (%)'
+                }
+              },
+              x: {
+                title: {
+                  display: true,
+                  text: 'Date (Quiz Title)'
+                }
+              }
+            }
+          }
+        });
+      }
+    }
+    // Cleanup chart on unmount or data change
+    return () => {
+      if (chartInstance) {
+        chartInstance.destroy();
+        chartInstance = null;
+      }
+    };
+  }, [data]);
+
   const handleEditToggle = () => {
     setIsEditing(!isEditing);
   };
@@ -119,8 +168,7 @@ export default function StudentDashboardPage() {
       localStorage.setItem('profile', JSON.stringify(response.profile));
       window.dispatchEvent(new Event('storageChange')); // Notify Navbar
       toast.success('Profile updated successfully');
-    } 
-    catch (error: unknown) {
+    } catch (error: unknown) {
       if (error instanceof Error) {
         toast.error(error.message || 'Failed to update profile');
       } else if (typeof error === 'string') {
@@ -149,10 +197,20 @@ export default function StudentDashboardPage() {
     }
   };
 
-  // Check if a quiz has been attempted by matching id with completedQuizzes
   const isQuizAttempted = (quizId: string | undefined): boolean => {
     if (!quizId || !data?.completedQuizzes) return false;
     return data.completedQuizzes.some((completedQuiz) => completedQuiz.quizId === quizId);
+  };
+
+  const getProgressData = () => {
+    if (!data?.completedQuizzes) return [];
+    const sortedQuizzes = [...data.completedQuizzes].sort((a, b) => new Date(b.attemptDate).getTime() - new Date(a.attemptDate).getTime());
+    const recentQuizzes = sortedQuizzes.slice(0, Math.min(5, sortedQuizzes.length));
+    return recentQuizzes.map(quiz => ({
+      date: formatISTDate(quiz.attemptDate),
+      title: quiz.title,
+      scorePercentage: quiz.fullMarks ? (quiz.totalScore / quiz.fullMarks) * 100 : 0,
+    }));
   };
 
   if (loading) {
@@ -167,138 +225,154 @@ export default function StudentDashboardPage() {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
     toast.error('Please login to access dashboard');
-    return router.push('/')
+    return router.push('/');
   }
 
   return (
     <div className="container mx-auto p-8">
       <h1 className="text-3xl font-bold text-primary mb-6">Student Dashboard</h1>
 
-      {/* Student Details Card */}
-      <div className="mb-8">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between">
-            <CardTitle>Student Details</CardTitle>
-            <Button variant={'grayscale'} onClick={handleEditToggle}>
-              {isEditing ? 'Cancel' : 'Edit Profile'}
-            </Button>
-          </CardHeader>
-          <CardContent>
-            {isEditing ? (
-              <div className="grid gap-4">
-                <div>
-                  <Label htmlFor="firstName">First Name</Label>
-                  <Input
-                    type="text"
-                    id="firstName"
-                    name="firstName"
-                    value={formData.firstName}
-                    onChange={handleInputChange}
-                    placeholder="Enter first name"
-                    required
-                  />
+      <div className="grid grid-cols-2 gap-6 mb-8" style={{ minHeight: '400px' }}> {/* Set minimum height for both cards */}
+        {/* Student Details Card (Left Half) */}
+        <div className="col-span-1">
+          <Card style={{ height: '100%' }}>
+            <CardHeader className="flex flex-row items-center justify-between">
+              <CardTitle>Student Details</CardTitle>
+              <Button variant={'grayscale'} onClick={handleEditToggle}>
+                {isEditing ? 'Cancel' : 'Edit Profile'}
+              </Button>
+            </CardHeader>
+            <CardContent style={{ height: 'calc(100% - 48px)' }}> {/* Adjust for header height */}
+              {isEditing ? (
+                <div className="grid gap-4 h-full overflow-y-auto">
+                  <div>
+                    <Label htmlFor="firstName">First Name</Label>
+                    <Input
+                      type="text"
+                      id="firstName"
+                      name="firstName"
+                      value={formData.firstName}
+                      onChange={handleInputChange}
+                      placeholder="Enter first name"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="lastName">Last Name</Label>
+                    <Input
+                      type="text"
+                      id="lastName"
+                      name="lastName"
+                      value={formData.lastName}
+                      onChange={handleInputChange}
+                      placeholder="Enter last name"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="yearOfStudy">Year of Study</Label>
+                    <Input
+                      type="number"
+                      id="yearOfStudy"
+                      name="yearOfStudy"
+                      value={formData.yearOfStudy || ''}
+                      onChange={handleInputChange}
+                      placeholder="Enter year of study"
+                      max={4}
+                      min={1}
+                      required
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="department">Department</Label>
+                    <Input
+                      type="text"
+                      id="department"
+                      name="department"
+                      value={formData.department}
+                      onChange={handleInputChange}
+                      placeholder="Enter department"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="rollNumber">Roll Number</Label>
+                    <Input
+                      type="text"
+                      id="rollNumber"
+                      name="rollNumber"
+                      value={formData.rollNumber || ''}
+                      onChange={handleInputChange}
+                      placeholder="Enter roll number"
+                    />
+                  </div>
+                  <div className="flex justify-end">
+                    <Button variant={'grayscale'} onClick={handleSaveProfile}>
+                      Save
+                    </Button>
+                  </div>
                 </div>
-                <div>
-                  <Label htmlFor="lastName">Last Name</Label>
-                  <Input
-                    type="text"
-                    id="lastName"
-                    name="lastName"
-                    value={formData.lastName}
-                    onChange={handleInputChange}
-                    placeholder="Enter last name"
-                    required
-                  />
+              ) : (
+                <div className="grid gap-4 h-full overflow-y-auto">
+                  <div>
+                    <span className="font-semibold">First Name: </span>
+                    {isDefaultValue('firstName', profile.firstName) ? (
+                      <span className="text-red-500">Please complete your profile</span>
+                    ) : (
+                      profile.firstName
+                    )}
+                  </div>
+                  <div>
+                    <span className="font-semibold">Last Name: </span>
+                    {isDefaultValue('lastName', profile.lastName) ? (
+                      <span className="text-red-500">Please complete your profile</span>
+                    ) : (
+                      profile.lastName
+                    )}
+                  </div>
+                  <div>
+                    <span className="font-semibold">Year of Study: </span>
+                    {isDefaultValue('yearOfStudy', profile.yearOfStudy) ? (
+                      <span className="text-red-500">Please complete your profile</span>
+                    ) : (
+                      profile.yearOfStudy || 'N/A'
+                    )}
+                  </div>
+                  <div>
+                    <span className="font-semibold">Department: </span>
+                    {isDefaultValue('department', profile.department) ? (
+                      <span className="text-red-500">Please complete your profile</span>
+                    ) : (
+                      profile.department
+                    )}
+                  </div>
+                  <div>
+                    <span className="font-semibold">Roll Number: </span>
+                    {isDefaultValue('rollNumber', profile.rollNumber) ? (
+                      <span className="text-red-500">Please complete your profile</span>
+                    ) : (
+                      profile.rollNumber || 'N/A'
+                    )}
+                  </div>
                 </div>
-                <div>
-                  <Label htmlFor="yearOfStudy">Year of Study</Label>
-                  <Input
-                    type="number"
-                    id="yearOfStudy"
-                    name="yearOfStudy"
-                    value={formData.yearOfStudy || ''}
-                    onChange={handleInputChange}
-                    placeholder="Enter year of study"
-                    max={4}
-                    min={1}
-                    required
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="department">Department</Label>
-                  <Input
-                    type="text"
-                    id="department"
-                    name="department"
-                    value={formData.department}
-                    onChange={handleInputChange}
-                    placeholder="Enter department"
-                    required
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="rollNumber">Roll Number</Label>
-                  <Input
-                    type="text"
-                    id="rollNumber"
-                    name="rollNumber"
-                    value={formData.rollNumber || ''}
-                    onChange={handleInputChange}
-                    placeholder="Enter roll number"
-                  />
-                </div>
-                <div className="flex justify-end">
-                  <Button variant={'grayscale'} onClick={handleSaveProfile}>
-                    Save
-                  </Button>
-                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Progress Graph Card (Right Half) */}
+        <div className="col-span-1">
+          <Card style={{ height: '100%' }}>
+            <CardHeader>
+              <CardTitle>Progress Graph</CardTitle>
+            </CardHeader>
+            <CardContent style={{ height: 'calc(100% - 48px)' }}> {/* Adjust for header height */}
+              <div className="h-full flex items-center justify-center">
+                <canvas id="progressChart" width="400" height="300"></canvas>
               </div>
-            ) : (
-              <div className="grid gap-4">
-                <div>
-                  <span className="font-semibold">First Name: </span>
-                  {isDefaultValue('firstName', profile.firstName) ? (
-                    <span className="text-red-500">Please complete your profile</span>
-                  ) : (
-                    profile.firstName
-                  )}
-                </div>
-                <div>
-                  <span className="font-semibold">Last Name: </span>
-                  {isDefaultValue('lastName', profile.lastName) ? (
-                    <span className="text-red-500">Please complete your profile</span>
-                  ) : (
-                    profile.lastName
-                  )}
-                </div>
-                <div>
-                  <span className="font-semibold">Year of Study: </span>
-                  {isDefaultValue('yearOfStudy', profile.yearOfStudy) ? (
-                    <span className="text-red-500">Please complete your profile</span>
-                  ) : (
-                    profile.yearOfStudy || 'N/A'
-                  )}
-                </div>
-                <div>
-                  <span className="font-semibold">Department: </span>
-                  {isDefaultValue('department', profile.department) ? (
-                    <span className="text-red-500">Please complete your profile</span>
-                  ) : (
-                    profile.department
-                  )}
-                </div>
-                <div>
-                  <span className="font-semibold">Roll Number: </span>
-                  {isDefaultValue('rollNumber', profile.rollNumber) ? (
-                    <span className="text-red-500">Please complete your profile</span>
-                  ) : (
-                    profile.rollNumber || 'N/A'
-                  )}
-                </div>
-              </div>
-            )}
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        </div>
       </div>
 
       {/* Quizzes Completed and Average Score */}
@@ -389,7 +463,6 @@ export default function StudentDashboardPage() {
                         <TableCell className="w-1/4">
                           <Button
                             variant={'grayscale'}
-                            // className="bg-primary hover:bg-blue-700"
                             onClick={() => router.push(`/quiz/${quiz.id}`)}
                             disabled={!quiz.id || isQuizAttempted(quiz.id)}
                             title={isQuizAttempted(quiz.id) ? 'Quiz already attempted' : 'Start quiz'}
@@ -437,7 +510,6 @@ export default function StudentDashboardPage() {
                         <TableCell className="w-1/4">
                           <Button
                             variant={'grayscale'}
-                            // className="bg-gray-400 hover:bg-gray-500"
                             onClick={() => router.push(`/quiz/${quiz.quizId}/results`)}
                             disabled={!quiz.quizId || !canViewResults}
                             title={canViewResults ? 'View quiz results' : 'Results available after quiz ends'}

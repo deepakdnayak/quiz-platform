@@ -13,7 +13,7 @@ import {
 } from '@/components/ui/dialog';
 import { toast } from 'sonner';
 import Sidebar from '@/components/Sidebar';
-import { getAdminStatistics, deleteUser, updateUserRole, approveUser, getUserProgress, getNotifications } from '@/lib/api';
+import { getAdminStatistics, deleteUser, approveUser, getUserProgress, getNotifications } from '@/lib/api';
 import { AdminStatistics, UserProgress, Notification } from '@/lib/types';
 
 export default function AdminDashboardPage() {
