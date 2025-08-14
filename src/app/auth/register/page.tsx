@@ -87,7 +87,7 @@ export default function RegisterPage() {
     }
     setIsLoading(true);
     try {
-      const decoded: any = jwtDecode<DecodedGoogleJWT>(credentialResponse.credential);
+      const decoded = jwtDecode<DecodedGoogleJWT>(credentialResponse.credential);
       const { email, sub: googleId } = decoded;
 
       // Simulate a login API call (replace with your actual backend integration)
@@ -111,7 +111,7 @@ export default function RegisterPage() {
   };
 
   // Handle Google login failure
-  const handleGoogleFailure = (error: any) => {
+  const handleGoogleFailure = (error: unknown) => {
     toast.error('Google login failed. Please try again.');
     console.error(error);
   };
