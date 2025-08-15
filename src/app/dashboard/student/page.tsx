@@ -114,10 +114,13 @@ export default function StudentDashboardPage() {
     setIsEditing(!isEditing);
   };
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
+
 
   const handleSaveProfile = async () => {
     try {
@@ -157,9 +160,9 @@ export default function StudentDashboardPage() {
       case 'department':
         return value === 'CEC';
       case 'yearOfStudy':
-        return value === '1';
+        return value === '0';
       case 'rollNumber':
-        return value=== '4CB...';
+        return value=== '4CB00XX000';
       default:
         return false;
     }
@@ -213,73 +216,98 @@ export default function StudentDashboardPage() {
             <CardContent className="h-[calc(100%-48px)] overflow-y-auto">
               {isEditing ? (
                 <div className="grid gap-4">
+                  {/* First Name */}
                   <div>
                     <Label htmlFor="firstName">First Name</Label>
                     <Input
                       type="text"
                       id="firstName"
                       name="firstName"
-                      value={formData.firstName}
+                      value={formData.firstName === 'FirstName' ? '' : formData.firstName}
                       onChange={handleInputChange}
                       placeholder="Enter first name"
                       required
                     />
                   </div>
+
+                  {/* Last Name */}
                   <div>
                     <Label htmlFor="lastName">Last Name</Label>
                     <Input
                       type="text"
                       id="lastName"
                       name="lastName"
-                      value={formData.lastName}
+                      value={formData.lastName === 'LastName' ? '' : formData.lastName}
                       onChange={handleInputChange}
                       placeholder="Enter last name"
                       required
                     />
                   </div>
+
+                  {/* Year of Study */}
                   <div>
                     <Label htmlFor="yearOfStudy">Year of Study</Label>
-                    <Input
-                      type="number"
+                    <select
                       id="yearOfStudy"
                       name="yearOfStudy"
-                      value={formData.yearOfStudy || ''}
+                      value={formData.yearOfStudy === '0' ? '' : formData.yearOfStudy || ''}
                       onChange={handleInputChange}
-                      placeholder="Enter year of study"
-                      max={4}
-                      min={1}
                       required
-                    />
+                      className="border rounded p-2 w-full"
+                    >
+                      <option value="" disabled>Select year</option>
+                      <option value="1">1</option>
+                      <option value="2">2</option>
+                      <option value="3">3</option>
+                      <option value="4">4</option>
+                    </select>
                   </div>
+
+                  {/* Department */}
                   <div>
                     <Label htmlFor="department">Department</Label>
-                    <Input
-                      type="text"
+                    <select
                       id="department"
                       name="department"
-                      value={formData.department}
+                      value={formData.department === 'CEC' ? '' : formData.department || ''}
+
                       onChange={handleInputChange}
-                      placeholder="Enter department"
                       required
-                    />
+                      className="border rounded p-2 w-full"
+                    >
+                      <option value="" disabled>Select department</option>
+                      {/* Replace these with your actual departments */}
+                      <option value="CSE">CSE</option>
+                      <option value="ECE">ECE</option>
+                      <option value="MECH">MECH</option>
+                      <option value="CIVIL">CIVIL</option>
+                    </select>
                   </div>
+
+                  {/* Roll Number / USN */}
                   <div>
-                    <Label htmlFor="rollNumber">Roll Number</Label>
+                    <Label htmlFor="rollNumber">USN</Label>
                     <Input
                       type="text"
                       id="rollNumber"
                       name="rollNumber"
-                      value={formData.rollNumber || ''}
+                      value={formData.rollNumber === '4CB00XX000' ? '' : formData.rollNumber || ''}
                       onChange={handleInputChange}
-                      placeholder="Enter roll number"
+                      placeholder="Enter USN (e.g. 4CB00XX000)"
+                      pattern="^4CB\d{2}[A-Za-z]{2}\d{3}$"
+                      title="USN must be in the format 4CB00XX000"
+                      required
                     />
                   </div>
+
+                  {/* Save Button */}
                   <div className="flex justify-end">
-                    <Button variant={'grayscale'} onClick={handleSaveProfile}>
+                    <Button variant="grayscale" onClick={handleSaveProfile}>
                       Save
                     </Button>
                   </div>
                 </div>
+
               ) : (
                 <div className="grid gap-4">
                   <div>
