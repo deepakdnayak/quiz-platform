@@ -114,6 +114,9 @@ export default function StudentDashboardPage() {
     setIsEditing(!isEditing);
   };
 
+
+
+  // Update handleInputChange to allow all input without immediate validation
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
@@ -123,6 +126,13 @@ export default function StudentDashboardPage() {
 
 
   const handleSaveProfile = async () => {
+    // Validate roll number format
+    const rollNumberPattern = /^4CB\d{2}[A-Za-z]{2}\d{3}$/;
+    if (formData.rollNumber && !rollNumberPattern.test(formData.rollNumber)) {
+      toast.error('Invalid USN format. Must be in the format 4CBXXYYZZZ (e.g., 4CB21CS123)');
+      return;
+    } 
+
     try {
       const response = await updateProfile(formData);
       setProfile(response.profile);
@@ -160,9 +170,9 @@ export default function StudentDashboardPage() {
       case 'department':
         return value === 'CEC';
       case 'yearOfStudy':
-        return value === '0';
+        return Number(value) === 0;
       case 'rollNumber':
-        return value=== '4CB00XX000';
+        return value === '4CB00XX000';
       default:
         return false;
     }
@@ -277,10 +287,12 @@ export default function StudentDashboardPage() {
                     >
                       <option value="" disabled>Select department</option>
                       {/* Replace these with your actual departments */}
-                      <option value="CSE">CSE</option>
-                      <option value="ECE">ECE</option>
-                      <option value="MECH">MECH</option>
-                      <option value="CIVIL">CIVIL</option>
+                      <option value="Computer Science and Design">Computer Science and Design</option>
+                      <option value="Computer Science and Engineering">Computer Science and Engineering</option>
+                      <option value="Computer Science and Business System">Computer Science and Business System</option>
+                      <option value="Information Science and Engineering">Information Science and Engineering</option>
+                      <option value="Artificial Intelligence and Machine Learning">Artificial Intelligence and Machine Learning</option>
+                      <option value="Electronics and Communication">Electronics and Communication</option>
                     </select>
                   </div>
 
@@ -431,25 +443,39 @@ export default function StudentDashboardPage() {
             {data.upcomingQuizzes?.length === 0 ? (
               <p>No quizzes available</p>
             ) : (
-              <div className="overflow-x-auto">
-                <Table className="table-fixed w-full min-w-[600px]">
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead className="w-1/4">Title</TableHead>
-                      <TableHead className="w-1/4">Start Time</TableHead>
-                      <TableHead className="w-1/4">End Time</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {data.upcomingQuizzes?.map((quiz, index) => (
-                      <TableRow key={quiz.id ?? `quiz-${index}`}>
-                        <TableCell className="w-1/4">{quiz.title}</TableCell>
-                        <TableCell className="w-1/4">{formatISTDate(quiz.startTime)}</TableCell>
-                        <TableCell className="w-1/4">{formatISTDate(quiz.endTime)}</TableCell>
+              <div>
+                {/* Mobile cards */}
+                <div className="grid gap-4 sm:hidden">
+                  {data.upcomingQuizzes?.map((quiz) => (
+                    <Card key={quiz.id}>
+                      <CardHeader>{quiz.title}</CardHeader>
+                      <CardContent>
+                        <p>Start: {formatISTDate(quiz.startTime)}</p>
+                        <p className="py-2">End: {formatISTDate(quiz.endTime)}</p>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+                <div className="hidden sm:block overflow-x-auto">
+                  <Table className="table-fixed w-full min-w-[600px]">
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="w-1/4">Title</TableHead>
+                        <TableHead className="w-1/4">Start Time</TableHead>
+                        <TableHead className="w-1/4">End Time</TableHead>
                       </TableRow>
-                    )) ?? <TableRow><TableCell colSpan={3}>No quizzes available</TableCell></TableRow>}
-                  </TableBody>
-                </Table>
+                    </TableHeader>
+                    <TableBody>
+                      {data.upcomingQuizzes?.map((quiz, index) => (
+                        <TableRow key={quiz.id ?? `quiz-${index}`}>
+                          <TableCell className="w-1/4">{quiz.title}</TableCell>
+                          <TableCell className="w-1/4">{formatISTDate(quiz.startTime)}</TableCell>
+                          <TableCell className="w-1/4">{formatISTDate(quiz.endTime)}</TableCell>
+                        </TableRow>
+                      )) ?? <TableRow><TableCell colSpan={3}>No quizzes available</TableCell></TableRow>}
+                    </TableBody>
+                  </Table>
+                </div>
               </div>
             )}
           </CardContent>
@@ -468,36 +494,58 @@ export default function StudentDashboardPage() {
             {data.activeQuizzes?.length === 0 ? (
               <p>No active quizzes</p>
             ) : (
-              <div className="overflow-x-auto">
-                <Table className="table-fixed w-full min-w-[800px]">
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead className="w-1/4">Title</TableHead>
-                      <TableHead className="w-1/4">Start Time</TableHead>
-                      <TableHead className="w-1/4">End Time</TableHead>
-                      <TableHead className="w-1/4">Attempt</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {data.activeQuizzes?.map((quiz, index) => (
-                      <TableRow key={quiz.id ?? `quiz-${index}`}>
-                        <TableCell className="w-1/4">{quiz.title}</TableCell>
-                        <TableCell className="w-1/4">{formatISTDate(quiz.startTime)}</TableCell>
-                        <TableCell className="w-1/4">{formatISTDate(quiz.endTime)}</TableCell>
-                        <TableCell className="w-1/4">
-                          <Button
-                            variant={'grayscale'}
-                            onClick={() => router.push(`/quiz/${quiz.id}`)}
-                            disabled={!quiz.id || isQuizAttempted(quiz.id)}
-                            title={isQuizAttempted(quiz.id) ? 'Quiz already attempted' : 'Start quiz'}
-                          >
-                            Start Quiz
-                          </Button>
-                        </TableCell>
+              <div>
+                {/* Mobile cards */}
+                <div className="grid gap-4 sm:hidden">
+                  {data.activeQuizzes?.map((quiz) => (
+                    <Card key={quiz.id}>
+                      <CardHeader>{quiz.title}</CardHeader>
+                      <CardContent>
+                        <p>Start: {formatISTDate(quiz.startTime)}</p>
+                        <p className="py-2">End: {formatISTDate(quiz.endTime)}</p>
+                        <Button
+                              variant={'grayscale'}
+                              onClick={() => router.push(`/quiz/${quiz.id}`)}
+                              disabled={!quiz.id || isQuizAttempted(quiz.id)}
+                              title={isQuizAttempted(quiz.id) ? 'Quiz already attempted' : 'Start quiz'}
+                            >
+                              Attempt
+                            </Button>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+                <div className="hidden sm:block overflow-x-auto">
+                  <Table className="table-fixed w-full min-w-[800px]">
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="w-1/4">Title</TableHead>
+                        <TableHead className="w-1/4">Start Time</TableHead>
+                        <TableHead className="w-1/4">End Time</TableHead>
+                        <TableHead className="w-1/4">Attempt</TableHead>
                       </TableRow>
-                    )) ?? <TableRow><TableCell colSpan={4}>No quizzes active</TableCell></TableRow>}
-                  </TableBody>
-                </Table>
+                    </TableHeader>
+                    <TableBody>
+                      {data.activeQuizzes?.map((quiz, index) => (
+                        <TableRow key={quiz.id ?? `quiz-${index}`}>
+                          <TableCell className="w-1/4">{quiz.title}</TableCell>
+                          <TableCell className="w-1/4">{formatISTDate(quiz.startTime)}</TableCell>
+                          <TableCell className="w-1/4">{formatISTDate(quiz.endTime)}</TableCell>
+                          <TableCell className="w-1/4">
+                            <Button
+                              variant={'grayscale'}
+                              onClick={() => router.push(`/quiz/${quiz.id}`)}
+                              disabled={!quiz.id || isQuizAttempted(quiz.id)}
+                              title={isQuizAttempted(quiz.id) ? 'Quiz already attempted' : 'Start quiz'}
+                            >
+                              Attempt
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                      )) ?? <TableRow><TableCell colSpan={4}>No quizzes active</TableCell></TableRow>}
+                    </TableBody>
+                  </Table>
+                </div>
               </div>
             )}
           </CardContent>
@@ -515,39 +563,65 @@ export default function StudentDashboardPage() {
           {data.completedQuizzes?.length === 0 ? (
             <p>No quizzes available</p>
           ) : (
-            <div className="overflow-x-auto">
-              <Table className="table-fixed w-full min-w-[800px]">
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="w-1/4">Title</TableHead>
-                    <TableHead className="w-1/4">Score</TableHead>
-                    <TableHead className="w-1/4">Attempt Date</TableHead>
-                    <TableHead className="w-1/4">Results</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {data.completedQuizzes?.map((quiz, index) => {
-                    const canViewResults = isQuizEnded(quiz.endTime);
-                    return (
-                      <TableRow key={quiz.quizId ?? `quiz-${index}`}>
-                        <TableCell className="w-1/4">{quiz.title}</TableCell>
-                        <TableCell className="w-1/4">{quiz.totalScore}</TableCell>
-                        <TableCell className="w-1/4">{formatISTDate(quiz.attemptDate)}</TableCell>
-                        <TableCell className="w-1/4">
-                          <Button
-                            variant={'grayscale'}
-                            onClick={() => router.push(`/quiz/${quiz.quizId}/results`)}
-                            disabled={!quiz.quizId || !canViewResults}
-                            title={canViewResults ? 'View quiz results' : 'Results available after quiz ends'}
-                          >
-                            View Results
-                          </Button>
-                        </TableCell>
-                      </TableRow>
-                    );
-                  }) ?? <TableRow><TableCell colSpan={4}>No quizzes available</TableCell></TableRow>}
-                </TableBody>
-              </Table>
+            <div>
+              {/* Mobile cards */}
+              <div className="grid gap-4 sm:hidden">
+                {data.completedQuizzes?.map((quiz, index) => {
+                  const canViewResults = isQuizEnded(quiz.endTime);
+                  return (
+                    <Card key={index}>
+                      <CardHeader>{quiz.title}</CardHeader>
+                      <CardContent>
+                        <p>Score: {quiz.totalScore}</p>
+                        <p className="py-2">Attempt Date: {formatISTDate(quiz.attemptDate)}</p>
+                        <Button
+                                variant={'grayscale'}
+                                onClick={() => router.push(`/quiz/${quiz.quizId}/results`)}
+                                disabled={!quiz.quizId || !canViewResults}
+                                title={canViewResults ? 'View quiz results' : 'Results available after quiz ends'}
+                              >
+                                View Results
+                              </Button>
+                      </CardContent>
+                    </Card>
+                  );
+                })}
+              </div>
+
+              <div className="hidden sm:block overflow-x-auto">
+                <Table className="table-fixed w-full min-w-[800px]">
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="w-1/4">Title</TableHead>
+                      <TableHead className="w-1/4">Score</TableHead>
+                      <TableHead className="w-1/4">Attempt Date</TableHead>
+                      <TableHead className="w-1/4">Results</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {data.completedQuizzes?.map((quiz, index) => {
+                      const canViewResults = isQuizEnded(quiz.endTime);
+                      return (
+                        <TableRow key={quiz.quizId ?? `quiz-${index}`}>
+                          <TableCell className="w-1/4">{quiz.title}</TableCell>
+                          <TableCell className="w-1/4">{quiz.totalScore}</TableCell>
+                          <TableCell className="w-1/4">{formatISTDate(quiz.attemptDate)}</TableCell>
+                          <TableCell className="w-1/4">
+                            <Button
+                              variant={'grayscale'}
+                              onClick={() => router.push(`/quiz/${quiz.quizId}/results`)}
+                              disabled={!quiz.quizId || !canViewResults}
+                              title={canViewResults ? 'View quiz results' : 'Results available after quiz ends'}
+                            >
+                              View Results
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                      );
+                    }) ?? <TableRow><TableCell colSpan={4}>No quizzes available</TableCell></TableRow>}
+                  </TableBody>
+                </Table>
+              </div>
             </div>
           )}
         </CardContent>
