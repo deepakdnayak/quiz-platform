@@ -17,7 +17,6 @@ export default function Home() {
     totalStudents: 0,
     totalInstructors: 0,
   });
-  // const [user, setUser] = useState<{ email: string; role: string } | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const buttonRef = useRef<HTMLButtonElement>(null);
   const { ref, inView } = useInView({
@@ -26,18 +25,6 @@ export default function Home() {
   });
 
   const router = useRouter();
-  // const pathname = usePathname();
-
-  // useEffect(() => {
-  //   const token = localStorage.getItem('token');
-  //   const storedUser = localStorage.getItem('user');
-  //   if (token && storedUser) {
-  //     setUser(JSON.parse(storedUser));
-  //   }
-  //   else {
-  //     setUser(null); // Clear user if no token or storedUser
-  //   }
-  // }, [pathname]); 
 
   // Fetch statistics
   useEffect(() => {
@@ -226,19 +213,20 @@ export default function Home() {
                     Log In
                   </Link>
                 </li>
-                <li>
-                  <Link href="/quizzes" className="hover:text-blue-400">
-                    Explore Quizzes
-                  </Link>
-                </li>
               </ul>
             </div>
             <div>
               <h3 className="text-xl font-bold mb-4">Contact Us</h3>
               <p className="text-gray-400">
-                Email: support@quizplatform.com
+                Email:{" "}
+                <a href="mailto:csd.canara@gmail.com" className="text-blue-400 hover:underline">
+                  csd.canara@gmail.com
+                </a>
                 <br />
-                Phone: +1-800-QUIZ-FUN
+                Phone:{" "}
+                <a href="tel:9844416474" className="text-blue-400 hover:underline">
+                  9844416474
+                </a>
               </p>
             </div>
           </div>

@@ -164,18 +164,22 @@ export default function RegisterPage() {
               />
 
               {/* Google Login Button */}
-              <GoogleOAuthProvider clientId={process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || ''}>
-                <GoogleLogin
-                  onSuccess={handleGoogleSuccess}
-                  onError={()=> handleGoogleFailure}
-                  useOneTap={true} // Optional: Enables Google One Tap
-                  shape="rectangular"
-                  size="large"
-                  text="signin_with"
-                  theme="filled_blue"
-                  width="100%"
-                />
-              </GoogleOAuthProvider>
+              <div className="w-full flex justify-center">
+                <GoogleOAuthProvider clientId={process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || ''}>
+                  <div className="w-full flex justify-center">
+                    <GoogleLogin
+                      onSuccess={handleGoogleSuccess}
+                      onError={()=> handleGoogleFailure}
+                      useOneTap={true} // Optional: Enables Google One Tap
+                      shape="rectangular"
+                      size="large"
+                      text="signin_with"
+                      theme="filled_blue"
+                      width="100%"
+                    />
+                  </div>
+                </GoogleOAuthProvider>
+              </div>
 
               <Button
                 type="submit"
