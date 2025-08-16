@@ -196,15 +196,15 @@ export default function EditQuizPage() {
           endTime: data.endTime ? new Date(data.endTime).toISOString() : new Date(Date.now() + 3600000).toISOString(),
           duration: data.duration || 30,
           questions: Array.isArray(data.questions)
-            ? data.questions.map((q: any) => ({
+            ? data.questions.map((q: { questionId?: string; text?: string; score?: number; options?: { optionId?: string; text?: string; isCorrect: boolean }[] }) => ({
                 questionId: q.questionId || '',
                 text: q.text || '',
                 score: q.score || 1,
                 options: Array.isArray(q.options)
-                  ? q.options.map((o: any) => ({
+                  ? q.options.map((o: { optionId?: string; text?: string; isCorrect: boolean }) => ({
                       optionId: o.optionId || '',
                       text: o.text || '',
-                      isCorrect: o.isCorrect, // Directly use the provided isCorrect
+                      isCorrect: o.isCorrect,
                     }))
                   : [{ text: '', isCorrect: false }, { text: '', isCorrect: false }],
               }))

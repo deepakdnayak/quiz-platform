@@ -150,7 +150,7 @@ export default function InstructorDashboardPage() {
           </CardHeader>
           <CardContent>
             <p className="text-2xl font-semibold">
-              {dashboardData.averageScoreAcrossQuizzes ? `${(dashboardData.averageScoreAcrossQuizzes*100).toFixed(2)}%` : 'N/A'}
+              {dashboardData.averageScoreAcrossQuizzes ? `${(dashboardData.averageScoreAcrossQuizzes).toFixed(2)}%` : 'N/A'}
             </p>
           </CardContent>
         </Card>
