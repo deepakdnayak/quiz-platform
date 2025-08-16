@@ -158,11 +158,31 @@ export interface CreateQuizForm {
   }[];
 }
 
+export interface UpdateQuizForm {
+  title?: string;
+  description?: string;
+  yearOfStudy?: number;
+  startTime?: string;
+  endTime?: string;
+  duration?: number;
+  questions?: {
+    questionId?: string;
+    text: string;
+    options: {
+      optionId?: string;
+      text: string;
+      isCorrect: boolean;
+    }[];
+    score: number;
+  }[];
+}
+
 export interface QuizDetails {
   id: string;
   title: string;
   description: string;
   duration: number;
+  yearOfStudy: number;
   startTime: string;
   endTime: string;
   questions: {

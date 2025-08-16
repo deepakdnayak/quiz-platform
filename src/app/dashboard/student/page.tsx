@@ -425,7 +425,7 @@ export default function StudentDashboardPage() {
           </CardHeader>
           <CardContent>
             <p className="text-2xl font-semibold">
-              {data.averageScore ? `${(data.averageScore * 100).toFixed(2)}%` : '0'}
+              {data.averageScore ? `${data.averageScore.toFixed(2)}%` : 'N/A'}
             </p>
           </CardContent>
         </Card>

@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { toast } from 'sonner';
-import { getInstructorDashboard, getInstructorQuizzes, getQuizStatistics } from '@/lib/api';
+import { getInstructorDashboard, getInstructorQuizzes, getQuizStatistics, deleteQuiz } from '@/lib/api';
 import { InstructorDashboard, InstructorQuiz, QuizStatistics } from '@/lib/types';
 
 // Utility to format ISO date to 12-hour IST format (e.g., "2:30 PM, Aug 06, 2025")
@@ -61,12 +61,10 @@ export default function InstructorDashboardPage() {
       try {
         // Fetch dashboard data
         const dashboardResponse = await getInstructorDashboard();
-        // console.log('Instructor Dashboard API Response:', dashboardResponse); // Debug log
         setDashboardData(dashboardResponse);
 
         // Fetch all quizzes
         const quizzesResponse = await getInstructorQuizzes('all');
-        // console.log('Instructor Quizzes API Response:', quizzesResponse); // Debug log
         setQuizzes(quizzesResponse);
 
         // Fetch statistics for each quiz
@@ -75,7 +73,7 @@ export default function InstructorDashboardPage() {
             const stats = await getQuizStatistics(quiz.quizId);
             return { quizId: quiz.quizId, stats };
           } catch (error) {
-            console.error(`Error fetching stats for quiz ${quiz.quizId}:`, error); // Debug log
+            console.error(`Error fetching stats for quiz ${quiz.quizId}:`, error);
             return { quizId: quiz.quizId, stats: null };
           }
         });
@@ -85,11 +83,8 @@ export default function InstructorDashboardPage() {
           return acc;
         }, {} as { [key: string]: QuizStatistics });
         setQuizStats(statsMap);
-
-        // toast.success('Dashboard loaded successfully');
         
-      }
-      catch (error: unknown) {
+      } catch (error: unknown) {
         if (error instanceof Error) {
           toast.error(error.message || 'Failed to load dashboard');
         } else if (typeof error === 'string') {
@@ -97,14 +92,28 @@ export default function InstructorDashboardPage() {
         } else {
           toast.error('An unknown error occurred');
         }
-      }
-      finally {
+      } finally {
         setLoading(false);
       }
-    }
+    };
 
     fetchData();
   }, [router]);
+
+  const handleDeleteQuiz = async (quizId: string) => {
+    if (!confirm('Are you sure you want to delete this quiz?')) return;
+    try {
+      await deleteQuiz(quizId);
+      setQuizzes(quizzes.filter((quiz) => quiz.quizId !== quizId));
+      toast.success('Quiz deleted successfully');
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        toast.error(error.message || 'Failed to delete quiz');
+      } else {
+        toast.error('An unknown error occurred');
+      }
+    }
+  };
 
   if (loading) {
     return (
@@ -141,7 +150,7 @@ export default function InstructorDashboardPage() {
           </CardHeader>
           <CardContent>
             <p className="text-2xl font-semibold">
-              {dashboardData.averageScoreAcrossQuizzes ? dashboardData.averageScoreAcrossQuizzes.toFixed(2) : 'N/A'}
+              {dashboardData.averageScoreAcrossQuizzes ? `${(dashboardData.averageScoreAcrossQuizzes*100).toFixed(2)}%` : 'N/A'}
             </p>
           </CardContent>
         </Card>
@@ -158,73 +167,90 @@ export default function InstructorDashboardPage() {
       </div>
 
       {/* All Quizzes with Statistics */}
-      {dashboardData.isApproved?(
-      <Card className="bg-white shadow-sm"> 
-        <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle>All Quizzes</CardTitle>
-          <Button
-            variant={'grayscale'}
-            onClick={() => router.push('/dashboard/instructor/quiz/create')}
-          >
-            Create Quiz
-          </Button>
-        </CardHeader>
-        <CardContent>
-          {quizzes.length === 0 ? (
-            <p>No quizzes created</p>
-          ) : (
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Title</TableHead>
-                    <TableHead>Year of Study</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Start Time</TableHead>
-                    <TableHead>End Time</TableHead>
-                    <TableHead>Total Attempts</TableHead>
-                    <TableHead>Average Score</TableHead>
-                    <TableHead>Highest Score</TableHead>
-                    <TableHead>Lowest Score</TableHead>
-                    <TableHead>Details</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {quizzes.map((quiz) => {
-                    const stats = quizStats[quiz.quizId];
-                    return (
-                      <TableRow key={quiz.quizId}>
-                        <TableCell>{quiz.title}</TableCell>
-                        <TableCell>{quiz.yearOfStudy}</TableCell>
-                        <TableCell>{getQuizStatus(quiz.startTime, quiz.endTime)}</TableCell>
-                        <TableCell>{formatISTDate(quiz.startTime)}</TableCell>
-                        <TableCell>{formatISTDate(quiz.endTime)}</TableCell>
-                        <TableCell>{stats?.totalAttempts ?? quiz.totalAttempts ?? 0}</TableCell>
-                        <TableCell>{stats?.averageScore ? stats.averageScore.toFixed(2) : 'N/A'}</TableCell>
-                        <TableCell>{stats?.highestScore ?? 'N/A'}</TableCell>
-                        <TableCell>{stats?.lowestScore ?? 'N/A'}</TableCell>
-                        <TableCell>
-                          <Button
-                            variant={'grayscale'}
-                            size="sm"
-                            onClick={() => router.push(`/dashboard/instructor/quiz/${quiz.quizId}/resultsForInstructor?name=${encodeURIComponent(quiz.title)}`)}
-                          >
-                            View Results
-                          </Button>
-                        </TableCell>
-                      </TableRow>
-                    );
-                  })}
-                </TableBody>
-              </Table>
-            </div>)}
+      {dashboardData.isApproved ? (
+        <Card className="bg-white shadow-sm"> 
+          <CardHeader className="flex flex-row items-center justify-between">
+            <CardTitle>All Quizzes</CardTitle>
+            <Button
+              variant={'grayscale'}
+              onClick={() => router.push('/dashboard/instructor/quiz/create')}
+            >
+              Create Quiz
+            </Button>
+          </CardHeader>
+          <CardContent>
+            {quizzes.length === 0 ? (
+              <p>No quizzes created</p>
+            ) : (
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Title</TableHead>
+                      <TableHead>Year of Study</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Start Time</TableHead>
+                      <TableHead>End Time</TableHead>
+                      <TableHead>Total Attempts</TableHead>
+                      <TableHead>Average Score</TableHead>
+                      <TableHead>Highest Score</TableHead>
+                      <TableHead>Lowest Score</TableHead>
+                      <TableHead>Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {quizzes.map((quiz) => {
+                      const stats = quizStats[quiz.quizId];
+                      const status = getQuizStatus(quiz.startTime, quiz.endTime);
+                      return (
+                        <TableRow key={quiz.quizId}>
+                          <TableCell>{quiz.title}</TableCell>
+                          <TableCell>{quiz.yearOfStudy}</TableCell>
+                          <TableCell>{status}</TableCell>
+                          <TableCell>{formatISTDate(quiz.startTime)}</TableCell>
+                          <TableCell>{formatISTDate(quiz.endTime)}</TableCell>
+                          <TableCell>{stats?.totalAttempts ?? quiz.totalAttempts ?? 0}</TableCell>
+                          <TableCell>{stats?.averageScore ? stats.averageScore.toFixed(2) : 'N/A'}</TableCell>
+                          <TableCell>{stats?.highestScore ?? 'N/A'}</TableCell>
+                          <TableCell>{stats?.lowestScore ?? 'N/A'}</TableCell>
+                          <TableCell className="space-x-2">
+                            <Button
+                              variant={'grayscale'}
+                              size="sm"
+                              onClick={() => router.push(`/dashboard/instructor/quiz/${quiz.quizId}/resultsForInstructor?name=${encodeURIComponent(quiz.title)}`)}
+                            >
+                              View Results
+                            </Button>
+                            <Button
+                              variant={'grayscale'}
+                              size="sm"
+                              onClick={() => router.push(`/dashboard/instructor/quiz/${quiz.quizId}/edit`)}
+                              disabled={status !== 'Upcoming'}
+                            >
+                              Edit
+                            </Button>
+                            <Button
+                              variant={'destructive'}
+                              size="sm"
+                              onClick={() => handleDeleteQuiz(quiz.quizId)}
+                              disabled={status !== 'Upcoming'}
+                            >
+                              Delete
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
+                  </TableBody>
+                </Table>
+              </div>
+            )}
           </CardContent>
-      </Card>
-      ):
-      (
+        </Card>
+      ) : (
         <Card className="bg-white shadow-sm">
           <CardHeader>
-            <CardTitle className="text-red-400">You are not yet authorised to add Quizes. Please contact admin</CardTitle>
+            <CardTitle className="text-red-400">You are not yet authorised to add Quizzes. Please contact admin</CardTitle>
           </CardHeader>
         </Card>
       )}

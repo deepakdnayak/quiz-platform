@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { CreateQuizForm, QuizResultForInstructor,StatsResponse, InstructorDashboard, InstructorQuiz, QuizStatistics, QuizDetails, QuizAttempt, QuizResults, Profile, ProfileResponse, UpdateProfileData, ForgotPasswordResponse } from './types';
+import { CreateQuizForm, UpdateQuizForm, QuizResultForInstructor, StatsResponse, InstructorDashboard, InstructorQuiz, QuizStatistics, QuizDetails, QuizAttempt, QuizResults, Profile, ProfileResponse, UpdateProfileData, ForgotPasswordResponse } from './types';
 
 
 const baseURL = process.env.NEXT_PUBLIC_NODE_ENV=="production" ? process.env.NEXT_PUBLIC_API_URL : 'http://localhost:5000'; 
@@ -214,9 +214,49 @@ export const createQuiz = async (data: CreateQuizForm) => {
   }
 };
 
+export const updateQuiz = async (quizId: string, data: UpdateQuizForm) => {
+  try {
+    const response = await api.put(`/api/quizzes/${quizId}`, data);
+    return response.data;
+  } catch (error: unknown) {
+    if (error instanceof Error && 'response' in error) {
+      const err = error as { response?: { data?: { error?: string } } };
+      throw new Error(err.response?.data?.error || 'Failed to update quiz');
+    }
+    throw new Error('Failed to update quiz');
+  }
+};
+
+export const deleteQuiz = async (quizId: string) => {
+  try {
+    const response = await api.delete(`/api/quizzes/${quizId}`);
+    return response.data;
+  } catch (error: unknown) {
+    if (error instanceof Error && 'response' in error) {
+      const err = error as { response?: { data?: { error?: string } } };
+      throw new Error(err.response?.data?.error || 'Failed to delete quiz');
+    }
+    throw new Error('Failed to delete quiz');
+  }
+};
+
 export const getQuizDetails = async (quizId: string): Promise<QuizDetails> => {
   try {
     const response = await api.get(`/api/quizzes/${quizId}`);
+    return response.data;
+  } 
+  catch (error: unknown) {
+    if (error instanceof Error && 'response' in error) {
+      const err = error as { response?: { data?: { error?: string } } };
+      throw new Error(err.response?.data?.error || 'Failed to fetch quiz details');
+    }
+    throw new Error('Failed to fetch quiz details');
+  }
+};
+
+export const getQuizDetailsForEdit = async (quizId: string): Promise<UpdateQuizForm> => {
+  try {
+    const response = await api.get(`/api/quizzes/${quizId}/edit`);
     return response.data;
   } 
   catch (error: unknown) {
